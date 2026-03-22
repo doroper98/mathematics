@@ -121,6 +121,109 @@
 
   /* Custom "active" state for toggle btns (added via JS) */
   .yk-btn.tg-active { background: var(--yk-primary-soft, rgba(0,0,0,0.08)); color: var(--yk-primary, #333); }
+
+  /* ===== MOBILE ===== */
+  @media (max-width: 768px) {
+    /* Kill horizontal overflow everywhere */
+    html, body { overflow-x: hidden; width: 100%; }
+
+    /* Theme bar: horizontal scroll, single row */
+    .theme-bar {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      padding: 4px 8px;
+      gap: 4px;
+      scrollbar-width: none;
+    }
+    .theme-bar::-webkit-scrollbar { display: none; }
+    .theme-bar button { flex-shrink: 0; font-size: 0.55rem !important; padding: 3px 8px !important; white-space: nowrap; }
+    .theme-bar label { flex-shrink: 0; font-size: 0.6rem; }
+
+    /* Compact header */
+    .app-header { padding: 10px 12px 4px; }
+    .app-header h1 { font-size: 1.3rem; }
+    .app-header p { font-size: 0.7rem; }
+
+    /* Tabs: smaller, tighter */
+    .tabs { padding: 6px 8px; gap: 4px; }
+    .tabs .yk-btn { font-size: 0.65rem !important; padding: 5px 10px !important; }
+
+    /* Stack layout: graph on top, controls below */
+    .split {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+    .graph-side {
+      padding: 8px;
+      gap: 6px;
+    }
+    .ctrl-side {
+      padding: 8px;
+      border-left: none;
+      border-top: 1px solid rgba(128,128,128,0.15);
+      max-height: none !important;
+    }
+
+    /* Section header */
+    .sec-hdr h2 { font-size: 0.95rem; }
+    .sec-hdr .en { font-size: 0.6rem; }
+
+    /* Equation: smaller, don't overflow */
+    .eq-display {
+      font-size: 1rem;
+      padding: 8px 10px;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Plot: shorter on mobile */
+    .plot-box { min-height: 250px; }
+
+    /* Toggle buttons: compact */
+    .tg { gap: 3px; }
+    .tg .yk-btn { font-size: 0.6rem !important; padding: 4px 8px !important; }
+
+    /* Panels compact */
+    .yk-panel { padding: 10px !important; margin-bottom: 8px !important; }
+    .yk-panel-title { font-size: 0.75rem !important; margin-bottom: 8px !important; }
+
+    /* Metrics: smaller */
+    .yk-grid-2 { gap: 6px !important; }
+    .yk-metric { padding: 8px !important; }
+    .yk-metric-label { font-size: 0.6rem !important; }
+    .yk-metric-value { font-size: 1rem !important; }
+
+    /* Sliders compact */
+    .sl-item { margin-bottom: 10px; }
+    .sl-lbl .vn { font-size: 0.85rem; }
+    .sl-lbl .vd { font-size: 0.6rem; }
+    .sl-lbl .vv { font-size: 0.8rem; }
+
+    /* Two equations side by side: stack on small screens */
+    .two-eq { grid-template-columns: 1fr; gap: 4px; }
+    .two-eq .eq-display { font-size: 0.9rem; padding: 6px 8px; }
+
+    /* Description box */
+    .desc-box { font-size: 0.65rem; padding: 6px 8px; }
+    .deriv-eq { font-size: 0.7rem; padding: 6px; }
+
+    /* Section labels */
+    .sec-label { font-size: 0.55rem; }
+
+    /* Reset button */
+    .ctrl-side > .yk-btn { font-size: 0.6rem !important; padding: 3px 10px !important; }
+  }
+
+  /* Extra small phones */
+  @media (max-width: 380px) {
+    .tabs .yk-btn { font-size: 0.58rem !important; padding: 4px 7px !important; }
+    .eq-display { font-size: 0.85rem; }
+    .plot-box { min-height: 220px; }
+    .app-header h1 { font-size: 1.1rem; }
+  }
 </style>
 </head>
 <body class="yk-body">
