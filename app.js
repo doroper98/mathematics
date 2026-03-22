@@ -151,7 +151,7 @@ function updateTrig() {
   if(trigOpts.integralFill&&!isInv){const p=2*Math.PI/B,fx=ls(0,p,300),fy=trigEv(trigFn,fx,A,B,C,D);tr.push({x:fx,y:fx.map(()=>0),type:'scatter',mode:'lines',line:{color:'transparent'},showlegend:false});tr.push({x:fx,y:fy,type:'scatter',mode:'lines',fill:'tonexty',fillcolor:'rgba(16,185,129,0.15)',line:{color:'rgba(16,185,129,0.4)',width:1},connectgaps:false,name:'적분영역'});}
   const piTicks={tickvals:[-4*Math.PI,-3.5*Math.PI,-3*Math.PI,-2.5*Math.PI,-2*Math.PI,-1.5*Math.PI,-Math.PI,-0.5*Math.PI,0,0.5*Math.PI,Math.PI,1.5*Math.PI,2*Math.PI,2.5*Math.PI,3*Math.PI,3.5*Math.PI,4*Math.PI],ticktext:['-4π','','-3π','','-2π','','-π','','0','','π','','2π','','3π','','4π'],dtick:Math.PI};
   const xa=isInv?{...LB.xaxis,range:xR,title:'x'}:{...LB.xaxis,range:xR,title:'x',...piTicks};
-  Plotly.react('plot-trig',tr,ml({xaxis:xa,yaxis:{...LB.yaxis,range:isInv?[-4,4]:[-8,8],title:'y'},showlegend:true,legend:{x:0.01,y:0.99,bgcolor:'rgba(128,128,128,0.05)',font:{size:10}}}),CFG);
+  Plotly.react('plot-trig',tr,ml({xaxis:xa,yaxis:{...LB.yaxis,range:isInv?[-4,4]:[-4,4],title:'y'},showlegend:true,legend:{x:0.01,y:0.99,bgcolor:'rgba(128,128,128,0.05)',font:{size:10}}}),CFG);
   document.getElementById('info-amp').textContent=sf(Math.abs(A));document.getElementById('info-period').textContent=isInv?'-':sf(+(2*Math.PI/Math.abs(B)).toFixed(2));document.getElementById('info-phase').textContent=isInv?'-':sf(+(-C/B).toFixed(2));document.getElementById('info-vshift').textContent=sf(D);document.getElementById('info-trig-desc').textContent=trigDesc(trigFn);
 }
 function resetTrig(){document.getElementById('sl-ta').value=1;document.getElementById('sl-tb').value=1;document.getElementById('sl-tc').value=0;document.getElementById('sl-td').value=0;trigFn='sin';trigExtra={B2:1,C2:0};trigOpts={components:false,derivative:false,integralFill:false};document.querySelectorAll('#trig-basic-group .yk-btn,#trig-combo-group .yk-btn,#trig-inv-group .yk-btn').forEach(b=>b.classList.remove('tg-active'));document.querySelector('#trig-basic-group .yk-btn[data-fn="sin"]').classList.add('tg-active');document.querySelectorAll('#trig-show-comp,#trig-show-deriv,#trig-show-integ').forEach(b=>b.classList.remove('tg-active'));buildTrigExtra();updateTrig();}
@@ -375,7 +375,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
 
   // Angle label
   ctx.fillStyle = '#f59e0b';
-  ctx.font = `${size*0.035}px sans-serif`;
+  ctx.font = `${size*0.07}px sans-serif`;
   ctx.textAlign = 'left';
   const labelR = r * 0.28;
   ctx.fillText(deg + '°', cx + labelR * Math.cos(-rad/2) + 4, cy + labelR * Math.sin(-rad/2) + 4);
@@ -388,7 +388,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
   ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, cy); ctx.stroke();
   ctx.fillStyle = '#3b82f6';
-  ctx.font = `bold ${size*0.032}px sans-serif`;
+  ctx.font = `bold ${size*0.065}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.fillText('cos', (cx + px) / 2, cy + size * 0.04);
 
@@ -432,7 +432,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
       ctx.beginPath(); ctx.moveTo(tanPx, cy); ctx.lineTo(tanPx, tanPy); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = '#10b981';
-      ctx.font = `bold ${size*0.03}px sans-serif`;
+      ctx.font = `bold ${size*0.06}px sans-serif`;
       ctx.textAlign = 'left';
       ctx.fillText('tan', tanPx + 4, (cy + tanPy) / 2);
 
@@ -452,7 +452,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
 
   // Coordinate label
   ctx.fillStyle = textCol;
-  ctx.font = `${size*0.028}px sans-serif`;
+  ctx.font = `${size*0.055}px sans-serif`;
   ctx.textAlign = cosV >= 0 ? 'left' : 'right';
   const lx = cosV >= 0 ? px + 10 : px - 10;
   const ly = sinV >= 0 ? py - 10 : py + 16;
@@ -460,7 +460,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
 
   // Axis labels
   ctx.fillStyle = 'rgba(128,128,128,0.5)';
-  ctx.font = `${size*0.026}px sans-serif`;
+  ctx.font = `${size*0.052}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.fillText('1', cx + r, cy + size * 0.04);
   ctx.fillText('-1', cx - r, cy + size * 0.04);
