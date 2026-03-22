@@ -302,17 +302,19 @@ function drawTriLearnGraph(rad, sinV, cosV) {
   const x = ls(0, 2*Math.PI, 500);
   const ySin = x.map(xi => Math.sin(xi));
   const yCos = x.map(xi => Math.cos(xi));
-  const yTan = x.map(xi => { const v = Math.tan(xi); return Math.abs(v) > 8 ? null : v; });
+  // tan 클리핑: -1.5 ~ 1.5 범위만 (원 크기에 맞춤)
+  const TCLIP = 1.5;
+  const yTan = x.map(xi => { const v = Math.tan(xi); return Math.abs(v) > TCLIP ? null : v; });
 
   const tanV = Math.abs(cosV) < 1e-10 ? null : sinV / cosV;
-  const tanClip = tanV !== null && Math.abs(tanV) <= 8 ? tanV : null;
+  const tanClip = tanV !== null && Math.abs(tanV) <= TCLIP ? tanV : null;
 
   const tr = [
     { x, y: ySin, type:'scatter', mode:'lines', line:{color:'#e94560',width:2.5}, name:'sin θ' },
     { x, y: yCos, type:'scatter', mode:'lines', line:{color:'#3b82f6',width:2.5}, name:'cos θ' },
     { x, y: yTan, type:'scatter', mode:'lines', line:{color:'#10b981',width:1.5,dash:'dot'}, connectgaps:false, name:'tan θ' },
     // Current angle vertical line
-    { x:[rad,rad], y:[-8,8], type:'scatter', mode:'lines', line:{color:'#f59e0b',width:1.5,dash:'dash'}, showlegend:false },
+    { x:[rad,rad], y:[-1.8,1.8], type:'scatter', mode:'lines', line:{color:'#f59e0b',width:1.5,dash:'dash'}, showlegend:false },
     // Points at current angle
     { x:[rad], y:[sinV], type:'scatter', mode:'markers', marker:{color:'#e94560',size:10,line:{width:2,color:'white'}}, name:'sin='+sinV.toFixed(2) },
     { x:[rad], y:[cosV], type:'scatter', mode:'markers', marker:{color:'#3b82f6',size:10,line:{width:2,color:'white'}}, name:'cos='+cosV.toFixed(2) },
@@ -321,13 +323,19 @@ function drawTriLearnGraph(rad, sinV, cosV) {
     tr.push({ x:[rad], y:[tanClip], type:'scatter', mode:'markers', marker:{color:'#10b981',size:8,line:{width:2,color:'white'}}, name:'tan='+tanClip.toFixed(2) });
   }
 
-  const piT = { tickvals:[0, Math.PI/2, Math.PI, 1.5*Math.PI, 2*Math.PI], ticktext:['0','π/2','π','3π/2','2π'] };
+  // x축: π 단위 + 각도 이중 표시 (주요 특수각만)
+  const piT = {
+    tickvals:[0, Math.PI/6, Math.PI/4, Math.PI/3, Math.PI/2, Math.PI, 3*Math.PI/2, 2*Math.PI],
+    ticktext:['0','π/6<br><span style="font-size:0.7em">30°</span>','π/4<br><span style="font-size:0.7em">45°</span>','π/3<br><span style="font-size:0.7em">60°</span>','π/2<br><span style="font-size:0.7em">90°</span>','π<br><span style="font-size:0.7em">180°</span>','3π/2<br><span style="font-size:0.7em">270°</span>','2π<br><span style="font-size:0.7em">360°</span>']
+  };
+
   Plotly.react('plot-trilearn', tr, ml({
-    xaxis:{...LB.xaxis, range:[0, 2*Math.PI], title:'θ (라디안)', ...piT},
-    yaxis:{...LB.yaxis, range:[-4,4], title:'값', dtick:1},
-    height: 220,
+    xaxis:{...LB.xaxis, range:[0, 2*Math.PI], title:'θ  (라디안 rad / 각도 deg)', ...piT, tickangle:0},
+    yaxis:{...LB.yaxis, range:[-1.8,1.8], title:'값', dtick:0.5},
+    height: 350,
+    margin:{t:40, b:70, l:50, r:20},
     showlegend:true,
-    legend:{orientation:'h', x:0.5, xanchor:'center', y:1.12, font:{size:10}}
+    legend:{orientation:'h', x:0.5, xanchor:'center', y:1.08, font:{size:10}}
   }), CFG);
 }
 
@@ -416,7 +424,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
     const tanLen = sinV / cosV;
     const tanPx = cx + r, tanPy = cy - r * tanLen;
     // Clip to reasonable range
-    if (Math.abs(tanLen) < 4) {
+    if (Math.abs(tanLen) < 1.5) {
       ctx.strokeStyle = '#10b981';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);
