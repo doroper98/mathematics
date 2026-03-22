@@ -332,7 +332,7 @@ function drawTriLearnGraph(rad, sinV, cosV) {
   Plotly.react('plot-trilearn', tr, ml({
     xaxis:{...LB.xaxis, range:[0, 2*Math.PI], title:'θ  (라디안 rad / 각도 deg)', ...piT, tickangle:0},
     yaxis:{...LB.yaxis, range:[-1.5,1.5], title:'값', dtick:1},
-    height: window.innerWidth < 768 ? 200 : 280,
+    height: window.innerWidth < 768 ? 260 : 360,
     margin:{t:10, b:55, l:40, r:12},
     showlegend:false
   }), CFG);
@@ -390,7 +390,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
   ctx.fillStyle = '#3b82f6';
   ctx.font = `bold ${size*0.065}px sans-serif`;
   ctx.textAlign = 'center';
-  ctx.fillText('cos', (cx + px) / 2, cy + size * 0.04);
+  ctx.fillText('cos', (cx + px) / 2, cy + size * 0.09);
 
   // sin line (opposite - red)
   ctx.strokeStyle = '#e94560';

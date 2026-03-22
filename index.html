@@ -309,7 +309,7 @@
   <div class="graph-side">
     <div class="sec-hdr"><h2>일차함수</h2><span class="en">Linear Function</span></div>
     <div class="eq-display" id="eq-linear"></div>
-    <div class="plot-box" id="plot-linear"></div>
+    <div class="plot-box" id="plot-linear" style="min-height:490px"></div>
   </div>
   <div class="ctrl-side">
     <button class="yk-btn" onclick="resetLinear()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
@@ -340,7 +340,7 @@
       <button class="yk-btn tg-active" onclick="toggleQF(this,'axis')">대칭축 Axis</button>
       <button class="yk-btn" onclick="toggleQF(this,'derivative')">도함수 Derivative</button>
     </div>
-    <div class="plot-box" id="plot-quad"></div>
+    <div class="plot-box" id="plot-quad" style="min-height:245px; max-height:280px"></div>
     <div class="deriv-eq" id="deriv-quad" style="display:none"></div>
   </div>
   <div class="ctrl-side">
@@ -369,7 +369,7 @@
     <div class="sec-hdr"><h2>삼각비와 단위원</h2><span class="en">Trigonometric Ratios & Unit Circle</span></div>
 
     <!-- 1. sin/cos/tan 그래프 -->
-    <div class="plot-box" id="plot-trilearn" style="min-height:220px; margin-bottom:4px;"></div>
+    <div class="plot-box" id="plot-trilearn" style="min-height:260px; margin-bottom:4px;"></div>
 
     <!-- 2. 단위원 + 슬라이더 가로 배치 -->
     <div class="trilearn-mid">
@@ -480,7 +480,7 @@
       <button class="yk-btn tg-active" id="dv-deriv" onclick="toggleDO(this,'derivCurve')">도함수 f'(x)</button>
       <button class="yk-btn" id="dv-deriv2" onclick="toggleDO(this,'deriv2Curve')">이계도함수 f''(x)</button>
     </div>
-    <div class="plot-box" id="plot-deriv"></div>
+    <div class="plot-box" id="plot-deriv" style="min-height:245px; max-height:280px"></div>
   </div>
   <div class="ctrl-side">
     <button class="yk-btn" onclick="resetDeriv()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
@@ -521,7 +521,7 @@
       <button class="yk-btn tg-active" id="ig-area" onclick="toggleIO(this,'area')">넓이 표시 Area</button>
       <button class="yk-btn" id="ig-anti" onclick="toggleIO(this,'antideriv')">부정적분 F(x)</button>
     </div>
-    <div class="plot-box" id="plot-integ"></div>
+    <div class="plot-box" id="plot-integ" style="min-height:245px; max-height:280px"></div>
   </div>
   <div class="ctrl-side">
     <button class="yk-btn" onclick="resetInteg()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
@@ -562,7 +562,7 @@
       <div class="eq-display" id="eq-int-line" style="border-left:3px solid var(--c-b)"></div>
       <div class="eq-display" id="eq-int-quad" style="border-left:3px solid var(--c-a)"></div>
     </div>
-    <div class="plot-box" id="plot-intersection"></div>
+    <div class="plot-box" id="plot-intersection" style="min-height:245px; max-height:280px"></div>
   </div>
   <div class="ctrl-side">
     <button class="yk-btn" onclick="resetIntersection()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
