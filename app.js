@@ -341,29 +341,30 @@ function drawTriLearnGraph(rad, sinV, cosV) {
 function drawUnitCircle(deg, rad, cosV, sinV) {
   const canvas = document.getElementById('cv-trilearn');
   if (!canvas) return;
-  // Reset canvas size first so parent can shrink
-  canvas.style.width = '100%'; canvas.style.height = '100%';
+  // Canvas = parent width, square
+  canvas.style.width = ''; canvas.style.height = '';
   const pw = canvas.parentElement.offsetWidth || 260;
-  const ph = canvas.parentElement.offsetHeight || 200;
-  canvas.width = pw * 2; canvas.height = ph * 2;
-  canvas.style.width = pw + 'px'; canvas.style.height = ph + 'px';
+  const size = pw;
+  canvas.width = size * 2; canvas.height = size * 2;
+  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2); // retina
-  const size = Math.min(pw, ph);
-  const cx = ph * 0.45, cy = ph / 2, r = ph * 0.4;
+  // 원 중심을 살짝 왼쪽+위로, 오른쪽/아래에 라벨 여유
+  const r = size * 0.32;
+  const cx = size * 0.38, cy = size * 0.45;
 
   // Get theme colors
   const cs = getComputedStyle(document.body);
   const bgCol = cs.backgroundColor || '#fff';
   const textCol = cs.color || '#222';
 
-  ctx.clearRect(0, 0, pw, ph);
+  ctx.clearRect(0, 0, size, size);
 
   // Grid
   ctx.strokeStyle = 'rgba(128,128,128,0.12)';
   ctx.lineWidth = 0.5;
-  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(pw, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(size, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, size); ctx.stroke();
 
   // Unit circle
   ctx.strokeStyle = 'rgba(128,128,128,0.3)';
