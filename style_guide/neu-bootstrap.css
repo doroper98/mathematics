@@ -1,0 +1,250 @@
+/*
+ * YK_neu-bootstrap.css
+ * YK Design System — Neumorphism Bootstrap
+ * Light clay surface, raised/inset dual shadows, muted pastels
+ * 
+ * Usage: <link rel="stylesheet" href="YK_neu-bootstrap.css">
+ * All components use .yk- prefix to avoid conflicts.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+:root {
+  /* ── Surface ── */
+  --yk-bg: #e0e5ec;
+  --yk-surface: #e0e5ec;
+  --yk-surface-hover: #d5dae1;
+
+  /* ── Shadows ── */
+  --yk-shadow-raised: 6px 6px 12px #b8bec7, -6px -6px 12px #ffffff;
+  --yk-shadow-inset: inset 4px 4px 8px #b8bec7, inset -4px -4px 8px #ffffff;
+  --yk-shadow-sm: 3px 3px 6px #b8bec7, -3px -3px 6px #ffffff;
+  --yk-shadow-inset-sm: inset 2px 2px 5px #b8bec7, inset -2px -2px 5px #ffffff;
+
+  /* ── Typography ── */
+  --yk-font: 'DM Sans', 'Noto Sans KR', -apple-system, sans-serif;
+  --yk-font-mono: 'DM Mono', 'Noto Sans KR', monospace;
+  --yk-text: #2d3436;
+  --yk-text-secondary: #636e72;
+  --yk-text-muted: #b2bec3;
+
+  /* ── Accents ── */
+  --yk-primary: #0984e3;
+  --yk-primary-soft: rgba(9, 132, 227, 0.12);
+  --yk-secondary: #6c5ce7;
+  --yk-secondary-soft: rgba(108, 92, 231, 0.12);
+  --yk-danger: #e17055;
+  --yk-danger-soft: rgba(225, 112, 85, 0.12);
+  --yk-success: #00b894;
+  --yk-success-soft: rgba(0, 184, 148, 0.12);
+  --yk-warning: #fdcb6e;
+  --yk-warning-soft: rgba(253, 203, 110, 0.15);
+
+  /* ── Layout ── */
+  --yk-radius: 16px;
+  --yk-radius-sm: 10px;
+  --yk-radius-lg: 22px;
+  --yk-gap: 1rem;
+  --yk-transition: all 0.25s ease;
+}
+
+/* ── Base ── */
+.yk-body {
+  font-family: var(--yk-font);
+  background: var(--yk-bg);
+  color: var(--yk-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Card ── */
+.yk-card {
+  background: var(--yk-surface);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-raised);
+  padding: 1.5rem;
+  transition: var(--yk-transition);
+  border: none;
+}
+.yk-card:hover {
+  box-shadow: var(--yk-shadow-inset);
+}
+.yk-card-flat {
+  background: var(--yk-surface);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-sm);
+  padding: 1.25rem;
+}
+
+/* ── Button ── */
+.yk-btn {
+  font-family: var(--yk-font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--yk-radius-sm);
+  background: var(--yk-surface);
+  color: var(--yk-text);
+  box-shadow: var(--yk-shadow-sm);
+  cursor: pointer;
+  transition: var(--yk-transition);
+}
+.yk-btn:hover {
+  box-shadow: var(--yk-shadow-inset-sm);
+}
+.yk-btn:active {
+  box-shadow: var(--yk-shadow-inset);
+}
+.yk-btn-primary {
+  color: var(--yk-primary);
+}
+.yk-btn-danger {
+  color: var(--yk-danger);
+}
+.yk-btn-success {
+  color: var(--yk-success);
+}
+
+/* ── Badge ── */
+.yk-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--yk-primary-soft);
+  color: var(--yk-primary);
+}
+.yk-badge-danger { background: var(--yk-danger-soft); color: var(--yk-danger); }
+.yk-badge-success { background: var(--yk-success-soft); color: var(--yk-success); }
+.yk-badge-warning { background: var(--yk-warning-soft); color: var(--yk-warning); }
+.yk-badge-secondary { background: var(--yk-secondary-soft); color: var(--yk-secondary); }
+
+/* ── Input ── */
+.yk-input, .yk-select, .yk-textarea {
+  font-family: var(--yk-font);
+  font-size: 0.85rem;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--yk-radius-sm);
+  background: var(--yk-surface);
+  color: var(--yk-text);
+  box-shadow: var(--yk-shadow-inset-sm);
+  outline: none;
+  transition: var(--yk-transition);
+  width: 100%;
+}
+.yk-input:focus, .yk-select:focus, .yk-textarea:focus {
+  box-shadow: var(--yk-shadow-inset), 0 0 0 2px var(--yk-primary-soft);
+}
+.yk-textarea { min-height: 100px; resize: vertical; }
+
+/* ── Alert / Insight Box ── */
+.yk-alert {
+  padding: 1.25rem;
+  border-radius: var(--yk-radius-sm);
+  border-left: 4px solid var(--yk-primary);
+  background: var(--yk-primary-soft);
+  font-size: 0.85rem;
+}
+.yk-alert-danger { border-color: var(--yk-danger); background: var(--yk-danger-soft); }
+.yk-alert-success { border-color: var(--yk-success); background: var(--yk-success-soft); }
+.yk-alert-warning { border-color: var(--yk-warning); background: var(--yk-warning-soft); }
+.yk-alert-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.yk-alert-desc {
+  color: var(--yk-text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+/* ── Metric Card ── */
+.yk-metric {
+  background: var(--yk-surface);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-raised);
+  padding: 1.25rem;
+  transition: var(--yk-transition);
+}
+.yk-metric:hover { box-shadow: var(--yk-shadow-inset); }
+.yk-metric-label {
+  font-size: 0.72rem;
+  color: var(--yk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+}
+.yk-metric-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* ── Table ── */
+.yk-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  font-size: 0.82rem;
+}
+.yk-table th {
+  text-align: left;
+  padding: 8px 14px;
+  color: var(--yk-text-muted);
+  font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.yk-table td {
+  padding: 10px 14px;
+  background: var(--yk-surface);
+  box-shadow: var(--yk-shadow-sm);
+}
+.yk-table td:first-child { border-radius: var(--yk-radius-sm) 0 0 var(--yk-radius-sm); }
+.yk-table td:last-child { border-radius: 0 var(--yk-radius-sm) var(--yk-radius-sm) 0; }
+
+/* ── Panel ── */
+.yk-panel {
+  background: var(--yk-surface);
+  border-radius: var(--yk-radius);
+  box-shadow: var(--yk-shadow-raised);
+  padding: 1.5rem;
+}
+.yk-panel-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.yk-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--yk-primary);
+}
+
+/* ── Grid ── */
+.yk-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--yk-gap); }
+.yk-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--yk-gap); }
+.yk-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--yk-gap); }
+
+/* ── Utilities ── */
+.yk-text-primary { color: var(--yk-primary); }
+.yk-text-secondary { color: var(--yk-text-secondary); }
+.yk-text-muted { color: var(--yk-text-muted); }
+.yk-text-danger { color: var(--yk-danger); }
+.yk-text-success { color: var(--yk-success); }
+.yk-mt-1 { margin-top: 0.5rem; }
+.yk-mt-2 { margin-top: 1rem; }
+.yk-mt-3 { margin-top: 1.5rem; }
+.yk-mb-1 { margin-bottom: 0.5rem; }
+.yk-mb-2 { margin-bottom: 1rem; }
+.yk-mb-3 { margin-bottom: 1.5rem; }
+.yk-p-1 { padding: 0.5rem; }
+.yk-p-2 { padding: 1rem; }
+.yk-p-3 { padding: 1.5rem; }

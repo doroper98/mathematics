@@ -1,0 +1,18 @@
+/* YK_bootstra-386.css — BOOTSTRA.386 (1980s DOS, blue bg, pixel font, block chars) */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+:root{--yk-bg:#0000aa;--yk-surface:#0000aa;--yk-surface-hover:#0000cc;--yk-shadow-raised:none;--yk-border:2px solid #5555ff;--yk-border-sm:1px solid #5555ff;--yk-font:'Press Start 2P','VT323',monospace;--yk-text:#fff;--yk-text-secondary:#aaa;--yk-text-muted:#555;--yk-primary:#ffff55;--yk-primary-soft:rgba(255,255,85,0.15);--yk-secondary:#55ff55;--yk-secondary-soft:rgba(85,255,85,0.12);--yk-danger:#ff5555;--yk-danger-soft:rgba(255,85,85,0.12);--yk-success:#55ff55;--yk-success-soft:rgba(85,255,85,0.12);--yk-warning:#55ffff;--yk-warning-soft:rgba(85,255,255,0.12);--yk-radius:0;--yk-radius-sm:0;--yk-gap:8px;--yk-transition:none}
+.yk-body{font-family:var(--yk-font);background:var(--yk-bg);color:var(--yk-text);line-height:1.8;font-size:.55rem;letter-spacing:.05em}
+.yk-card{background:var(--yk-surface);border:var(--yk-border);padding:1rem}.yk-card:hover{background:var(--yk-surface-hover)}
+.yk-btn{font-family:var(--yk-font);font-size:.5rem;padding:6px 14px;border:var(--yk-border);background:var(--yk-surface);color:var(--yk-primary);cursor:pointer}.yk-btn:hover{background:#000088;color:#fff}.yk-btn:active{background:#5555ff;color:#000}
+.yk-btn-primary{color:var(--yk-primary)}.yk-btn-danger{color:var(--yk-danger)}.yk-btn-success{color:var(--yk-secondary)}
+.yk-badge{display:inline-block;font-size:.45rem;padding:2px 6px;background:var(--yk-primary);color:#000;border:none}.yk-badge-danger{background:var(--yk-danger);color:#fff}.yk-badge-success{background:var(--yk-secondary);color:#000}
+.yk-input{font-family:var(--yk-font);font-size:.5rem;padding:4px 8px;border:var(--yk-border-sm);background:#000;color:#fff;outline:none;width:100%}.yk-input:focus{border-color:var(--yk-primary)}
+.yk-alert{padding:.75rem;border:var(--yk-border-sm);border-left:4px solid var(--yk-primary);background:var(--yk-primary-soft);font-size:.5rem}.yk-alert-danger{border-left-color:var(--yk-danger);background:var(--yk-danger-soft)}.yk-alert-success{border-left-color:var(--yk-secondary);background:var(--yk-secondary-soft)}.yk-alert-title{margin-bottom:4px}.yk-alert-desc{color:var(--yk-text-secondary);font-size:.45rem;line-height:1.6}
+.yk-metric{border:var(--yk-border);padding:.75rem}.yk-metric-label{font-size:.4rem;color:var(--yk-text-muted);text-transform:uppercase;margin-bottom:4px}.yk-metric-value{font-size:.7rem;color:var(--yk-primary)}
+.yk-panel{border:var(--yk-border);padding:1rem}
+.yk-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:var(--yk-gap)}.yk-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--yk-gap)}
+/* DOS-specific decorators */
+.yk-dos-header{background:#5555ff;color:#ffff55;padding:4px 8px;font-size:.55rem;text-align:center;margin:-1rem -1rem .75rem}
+.yk-dos-divider{border:none;border-top:1px solid #5555ff;margin:8px 0}
+.yk-dos-cursor::after{content:'_';animation:ykDos 1s step-end infinite}
+@keyframes ykDos{0%,100%{opacity:1}50%{opacity:0}}
