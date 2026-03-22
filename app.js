@@ -302,4 +302,3 @@ function replotAll(){updateLinear();updateQuad();updateTrig();updateDeriv();upda
 
 // ===== Init =====
 window.addEventListener('load',()=>{buildDerivSliders();buildIntegSliders();buildParamSliders();buildPolarSliders();replotAll();});
-</script>
