@@ -343,25 +343,27 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
   if (!canvas) return;
   // Reset canvas size first so parent can shrink
   canvas.style.width = '100%'; canvas.style.height = '100%';
-  const size = canvas.parentElement.offsetWidth || 200;
-  canvas.width = size * 2; canvas.height = size * 2;
-  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  const pw = canvas.parentElement.offsetWidth || 260;
+  const ph = canvas.parentElement.offsetHeight || 200;
+  canvas.width = pw * 2; canvas.height = ph * 2;
+  canvas.style.width = pw + 'px'; canvas.style.height = ph + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2); // retina
-  const cx = size / 2, cy = size / 2, r = size * 0.42;
+  const size = Math.min(pw, ph);
+  const cx = ph * 0.45, cy = ph / 2, r = ph * 0.4;
 
   // Get theme colors
   const cs = getComputedStyle(document.body);
   const bgCol = cs.backgroundColor || '#fff';
   const textCol = cs.color || '#222';
 
-  ctx.clearRect(0, 0, size, size);
+  ctx.clearRect(0, 0, pw, ph);
 
   // Grid
   ctx.strokeStyle = 'rgba(128,128,128,0.12)';
   ctx.lineWidth = 0.5;
-  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(size, cy); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, size); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(pw, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, ph); ctx.stroke();
 
   // Unit circle
   ctx.strokeStyle = 'rgba(128,128,128,0.3)';
@@ -433,6 +435,7 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
       ctx.setLineDash([]);
       ctx.fillStyle = '#10b981';
       ctx.font = `bold ${size*0.06}px sans-serif`;
+      ctx.textAlign = 'left';
       ctx.textAlign = 'left';
       ctx.fillText('tan', tanPx + 4, (cy + tanPy) / 2);
 
