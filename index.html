@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Playground - 수학 시각화</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #16213e;
+    --text: #eee;
+    --text-dim: #8892b0;
+    --radius: 12px;
+    /* Variable colors - shared between equation & sliders */
+    --c-a: #ff6b8a;
+    --c-b: #58a6ff;
+    --c-c: #64ffda;
+    --c-d: #f9a825;
+    --c-m: #58a6ff;
+    --c-n: #bb86fc;
+    --c-A: #ff6b8a;
+    --c-B: #58a6ff;
+    --c-C: #64ffda;
+    --c-D: #f9a825;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    text-align: center;
+    padding: 18px 20px 8px;
+    background: linear-gradient(135deg, var(--surface) 0%, var(--surface2) 100%);
+    border-bottom: 1px solid rgba(233,69,96,0.3);
+  }
+  header h1 {
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #e94560, #f9a825, #64ffda);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  header p { color: var(--text-dim); font-size: 0.85rem; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 10px 20px;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .tab-btn {
+    padding: 7px 18px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 30px;
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: all 0.3s;
+  }
+  .tab-btn:hover { border-color: #e94560; color: var(--text); }
+  .tab-btn.active {
+    background: #e94560;
+    color: white;
+    border-color: #e94560;
+    box-shadow: 0 0 15px rgba(233,69,96,0.3);
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* === Main split layout: graph LEFT, controls RIGHT === */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 0;
+    max-width: 1800px;
+    margin: 0 auto;
+    min-height: calc(100vh - 110px);
+  }
+  @media (max-width: 1000px) {
+    .split { grid-template-columns: 1fr; }
+    .side { max-height: none !important; }
+  }
+
+  .graph-side {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .side {
+    padding: 16px;
+    background: var(--surface);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    overflow-y: auto;
+    max-height: calc(100vh - 110px);
+  }
+  .side::-webkit-scrollbar { width: 4px; }
+  .side::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.03);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .card-title {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Section title in graph area */
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .section-header h2 {
+    font-size: 1.15rem;
+    color: #64ffda;
+  }
+  .section-header .en {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  /* Equation display with colored variables */
+  .equation-display {
+    text-align: center;
+    font-size: 1.5rem;
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.35);
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-family: 'Cambria Math', 'Times New Roman', serif;
+    letter-spacing: 1px;
+    line-height: 1.6;
+  }
+  .eq-var { font-weight: 700; }
+
+  /* Plot fills graph area */
+  .plot-container {
+    border-radius: var(--radius);
+    overflow: hidden;
+    flex: 1;
+    min-height: 350px;
+  }
+
+  /* Slider styling */
+  .slider-item {
+    margin-bottom: 14px;
+  }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    margin-bottom: 5px;
+  }
+  .slider-label .name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .slider-label .name .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+  .slider-label .var-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .slider-label .var-desc {
+    color: var(--text-dim);
+    font-size: 0.75rem;
+  }
+  .slider-label .value {
+    font-weight: 700;
+    font-family: 'Consolas', monospace;
+    min-width: 48px;
+    text-align: right;
+    font-size: 0.95rem;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.1);
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+  /* Per-color slider thumbs via classes */
+  .sl-a::-webkit-slider-thumb { background: var(--c-a); box-shadow: 0 0 6px var(--c-a); }
+  .sl-b::-webkit-slider-thumb { background: var(--c-b); box-shadow: 0 0 6px var(--c-b); }
+  .sl-c::-webkit-slider-thumb { background: var(--c-c); box-shadow: 0 0 6px var(--c-c); }
+  .sl-d::-webkit-slider-thumb { background: var(--c-d); box-shadow: 0 0 6px var(--c-d); }
+  .sl-m::-webkit-slider-thumb { background: var(--c-m); box-shadow: 0 0 6px var(--c-m); }
+  .sl-n::-webkit-slider-thumb { background: var(--c-n); box-shadow: 0 0 6px var(--c-n); }
+
+  /* Info boxes */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .info-item {
+    background: rgba(0,0,0,0.25);
+    padding: 8px 10px;
+    border-radius: 6px;
+    border-left: 3px solid rgba(255,255,255,0.15);
+  }
+  .info-item label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .info-item .val {
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Consolas', monospace;
+  }
+  .info-item.ca { border-left-color: var(--c-a); }
+  .info-item.cb { border-left-color: var(--c-b); }
+  .info-item.cc { border-left-color: var(--c-c); }
+  .info-item.cd { border-left-color: var(--c-d); }
+
+  /* Toggle buttons */
+  .toggle-group {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .toggle-btn {
+    padding: 5px 11px;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.2s;
+  }
+  .toggle-btn:hover { border-color: rgba(255,255,255,0.3); color: var(--text); }
+  .toggle-btn.active {
+    background: rgba(15,52,96,0.8);
+    color: #58a6ff;
+    border-color: #58a6ff;
+  }
+
+  .reset-btn {
+    padding: 5px 14px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: all 0.2s;
+    float: right;
+  }
+  .reset-btn:hover { background: #e94560; color: white; border-color: #e94560; }
+
+  .derivative-eq {
+    font-size: 0.85rem;
+    color: #bb86fc;
+    text-align: center;
+    padding: 6px;
+    margin-top: 8px;
+    background: rgba(187,134,252,0.08);
+    border-radius: 6px;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    letter-spacing: 0.5px;
+  }
+
+  .two-eq {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .two-eq .equation-display {
+    font-size: 1.1rem;
+    padding: 10px;
+    margin-bottom: 0;
+  }
+
+  .color-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 3px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Math Playground</h1>
+  <p>슬라이더를 움직여 수식의 변화를 직관적으로 탐색하세요</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="linear">일차함수</button>
+  <button class="tab-btn" data-tab="quadratic">이차함수</button>
+  <button class="tab-btn" data-tab="trig">삼각함수</button>
+  <button class="tab-btn" data-tab="intersection">교차 영역</button>
+  <button class="tab-btn" data-tab="parametric">매개변수</button>
+  <button class="tab-btn" data-tab="polar">극좌표</button>
+</div>
+
+<!-- ===================== 일차함수 ===================== -->
+<div class="tab-content active" id="tab-linear">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>일차함수</h2>
+      <span class="en">Linear Function</span>
+    </div>
+    <div class="equation-display" id="eq-linear">
+      y = <span class="eq-var" style="color:var(--c-a)">1.0</span>x
+      + <span class="eq-var" style="color:var(--c-b)">0.0</span>
+    </div>
+    <div class="plot-container" id="plot-linear"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetLinear()">초기화</button>
+    <div class="card-title">변수 조절 Variables</div>
+    <div class="card">
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">기울기 Slope</span></span>
+          <span class="value" style="color:var(--c-a)" id="val-la">1.00</span>
+        </div>
+        <input type="range" class="sl-a" id="sl-la" min="-5" max="5" step="0.1" value="1" oninput="updateLinear()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">b</span><span class="var-desc">y절편 y-intercept</span></span>
+          <span class="value" style="color:var(--c-b)" id="val-lb">0.00</span>
+        </div>
+        <input type="range" class="sl-b" id="sl-lb" min="-10" max="10" step="0.1" value="0" oninput="updateLinear()">
+      </div>
+    </div>
+
+    <div class="card-title">분석 결과 Analysis</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-item ca"><label>기울기 Slope</label><div class="val" id="info-slope">1.00</div></div>
+        <div class="info-item cb"><label>y절편 y-intercept</label><div class="val" id="info-yint">0.00</div></div>
+        <div class="info-item cc"><label>x절편 x-intercept</label><div class="val" id="info-xint">0.00</div></div>
+        <div class="info-item cd"><label>x=1 일 때 y값</label><div class="val" id="info-yat1">1.00</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== 이차함수 ===================== -->
+<div class="tab-content" id="tab-quadratic">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>이차함수</h2>
+      <span class="en">Quadratic Function</span>
+    </div>
+    <div class="equation-display" id="eq-quad">
+      y = <span class="eq-var" style="color:var(--c-a)">1.0</span>x²
+      + <span class="eq-var" style="color:var(--c-b)">0.0</span>x
+      + <span class="eq-var" style="color:var(--c-c)">0.0</span>
+    </div>
+    <div class="toggle-group">
+      <button class="toggle-btn active" onclick="toggleQuadFeature(this,'vertex')">꼭짓점 Vertex</button>
+      <button class="toggle-btn active" onclick="toggleQuadFeature(this,'axis')">축 Axis</button>
+      <button class="toggle-btn" onclick="toggleQuadFeature(this,'derivative')">도함수 Derivative</button>
+    </div>
+    <div class="plot-container" id="plot-quad"></div>
+    <div class="derivative-eq" id="deriv-quad" style="display:none"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetQuad()">초기화</button>
+    <div class="card-title">변수 조절 Variables</div>
+    <div class="card">
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">그래프의 폭과 방향 Opening</span></span>
+          <span class="value" style="color:var(--c-a)" id="val-qa">1.00</span>
+        </div>
+        <input type="range" class="sl-a" id="sl-qa" min="-5" max="5" step="0.1" value="1" oninput="updateQuad()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">b</span><span class="var-desc">축의 위치 Axis shift</span></span>
+          <span class="value" style="color:var(--c-b)" id="val-qb">0.00</span>
+        </div>
+        <input type="range" class="sl-b" id="sl-qb" min="-10" max="10" step="0.1" value="0" oninput="updateQuad()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-c)"></span><span class="var-name" style="color:var(--c-c)">c</span><span class="var-desc">y절편 y-intercept</span></span>
+          <span class="value" style="color:var(--c-c)" id="val-qc">0.00</span>
+        </div>
+        <input type="range" class="sl-c" id="sl-qc" min="-10" max="10" step="0.1" value="0" oninput="updateQuad()">
+      </div>
+    </div>
+
+    <div class="card-title">분석 결과 Analysis</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-item ca"><label>꼭짓점 Vertex</label><div class="val" id="info-vertex">(0.00, 0.00)</div></div>
+        <div class="info-item cb"><label>대칭축 Axis</label><div class="val" id="info-axis">x = 0.00</div></div>
+        <div class="info-item cc"><label>판별식 Discriminant</label><div class="val" id="info-disc">0.00</div></div>
+        <div class="info-item cd"><label>근 Roots</label><div class="val" id="info-roots" style="font-size:0.82rem">x = 0.00</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== 삼각함수 ===================== -->
+<div class="tab-content" id="tab-trig">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>삼각함수</h2>
+      <span class="en">Trigonometric Functions</span>
+    </div>
+    <div class="equation-display" id="eq-trig">
+      y = <span class="eq-var" style="color:var(--c-a)">1.0</span> sin(<span class="eq-var" style="color:var(--c-b)">1.0</span>x + <span class="eq-var" style="color:var(--c-c)">0.0</span>) + <span class="eq-var" style="color:var(--c-d)">0.0</span>
+    </div>
+    <div class="toggle-group">
+      <button class="toggle-btn" id="trig-show-components" onclick="toggleTrigOpt(this,'components')">개별 성분 Components</button>
+      <button class="toggle-btn" id="trig-show-derivative" onclick="toggleTrigOpt(this,'derivative')">도함수 Derivative</button>
+      <button class="toggle-btn" id="trig-show-integral" onclick="toggleTrigOpt(this,'integralFill')">적분 영역 Integral</button>
+    </div>
+    <div class="plot-container" id="plot-trig"></div>
+    <div class="derivative-eq" id="trig-deriv-eq" style="display:none"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetTrig()">초기화</button>
+
+    <div class="card-title">함수 선택 Function Type</div>
+    <div class="card">
+      <div class="section-label">기본 삼각함수 Basic</div>
+      <div class="toggle-group" id="trig-basic-group">
+        <button class="toggle-btn active" data-fn="sin" onclick="setTrigFn(this)">sin</button>
+        <button class="toggle-btn" data-fn="cos" onclick="setTrigFn(this)">cos</button>
+        <button class="toggle-btn" data-fn="tan" onclick="setTrigFn(this)">tan</button>
+        <button class="toggle-btn" data-fn="cot" onclick="setTrigFn(this)">cot</button>
+        <button class="toggle-btn" data-fn="sec" onclick="setTrigFn(this)">sec</button>
+        <button class="toggle-btn" data-fn="csc" onclick="setTrigFn(this)">csc</button>
+      </div>
+      <div class="section-label">합성 함수 Composite</div>
+      <div class="toggle-group" id="trig-combo-group">
+        <button class="toggle-btn" data-fn="sin+cos" onclick="setTrigFn(this)">sin+cos</button>
+        <button class="toggle-btn" data-fn="sin-cos" onclick="setTrigFn(this)">sin-cos</button>
+        <button class="toggle-btn" data-fn="sin*cos" onclick="setTrigFn(this)">sin×cos</button>
+        <button class="toggle-btn" data-fn="sin2" onclick="setTrigFn(this)">sin²</button>
+        <button class="toggle-btn" data-fn="cos2" onclick="setTrigFn(this)">cos²</button>
+        <button class="toggle-btn" data-fn="sin2+cos2" onclick="setTrigFn(this)">sin²+cos²</button>
+      </div>
+      <div class="section-label">역삼각함수 Inverse</div>
+      <div class="toggle-group" id="trig-inv-group">
+        <button class="toggle-btn" data-fn="asin" onclick="setTrigFn(this)">arcsin</button>
+        <button class="toggle-btn" data-fn="acos" onclick="setTrigFn(this)">arccos</button>
+        <button class="toggle-btn" data-fn="atan" onclick="setTrigFn(this)">arctan</button>
+      </div>
+    </div>
+
+    <div class="card-title">변수 조절 Variables</div>
+    <div class="card">
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">A</span><span class="var-desc">진폭 Amplitude</span></span>
+          <span class="value" style="color:var(--c-a)" id="val-ta">1.00</span>
+        </div>
+        <input type="range" class="sl-a" id="sl-ta" min="-5" max="5" step="0.1" value="1" oninput="updateTrig()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">B</span><span class="var-desc">주기 변환 (주기=2π/B) Period</span></span>
+          <span class="value" style="color:var(--c-b)" id="val-tb">1.00</span>
+        </div>
+        <input type="range" class="sl-b" id="sl-tb" min="0.1" max="6" step="0.1" value="1" oninput="updateTrig()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-c)"></span><span class="var-name" style="color:var(--c-c)">C</span><span class="var-desc">위상 이동 Phase shift</span></span>
+          <span class="value" style="color:var(--c-c)" id="val-tc">0.00</span>
+        </div>
+        <input type="range" class="sl-c" id="sl-tc" min="-6.28" max="6.28" step="0.05" value="0" oninput="updateTrig()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-d)"></span><span class="var-name" style="color:var(--c-d)">D</span><span class="var-desc">수직 이동 Vertical shift</span></span>
+          <span class="value" style="color:var(--c-d)" id="val-td">0.00</span>
+        </div>
+        <input type="range" class="sl-d" id="sl-td" min="-5" max="5" step="0.1" value="0" oninput="updateTrig()">
+      </div>
+      <div id="trig-extra-sliders"></div>
+    </div>
+
+    <div class="card-title">분석 결과 Analysis</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-item ca"><label>진폭 |A| Amplitude</label><div class="val" id="info-amp">1.00</div></div>
+        <div class="info-item cb"><label>주기 Period</label><div class="val" id="info-period">6.28</div></div>
+        <div class="info-item cc"><label>위상 이동 Phase</label><div class="val" id="info-phase">0.00</div></div>
+        <div class="info-item cd"><label>수직 이동 V-shift</label><div class="val" id="info-vshift">0.00</div></div>
+      </div>
+      <div style="margin-top:8px; font-size:0.78rem; color:var(--text-dim); background:rgba(0,0,0,0.2); padding:8px 10px; border-radius:6px;" id="info-trig-desc">
+        사인 함수 - 가장 기본적인 삼각함수
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== 교차 영역 ===================== -->
+<div class="tab-content" id="tab-intersection">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>교차 영역과 넓이</h2>
+      <span class="en">Intersection & Area</span>
+    </div>
+    <div class="two-eq">
+      <div class="equation-display" id="eq-int-line" style="border-left:3px solid var(--c-m)">
+        y = <span class="eq-var" style="color:var(--c-m)">1.0</span>x + <span class="eq-var" style="color:var(--c-n)">0.0</span>
+      </div>
+      <div class="equation-display" id="eq-int-quad" style="border-left:3px solid var(--c-a)">
+        y = <span class="eq-var" style="color:var(--c-a)">1.0</span>x² + <span class="eq-var" style="color:var(--c-c)">0.0</span>
+      </div>
+    </div>
+    <div class="plot-container" id="plot-intersection"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetIntersection()">초기화</button>
+    <div class="card-title">일차함수 직선 Linear</div>
+    <div class="card">
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-m)"></span><span class="var-name" style="color:var(--c-m)">m</span><span class="var-desc">기울기 Slope</span></span>
+          <span class="value" style="color:var(--c-m)" id="val-im">1.00</span>
+        </div>
+        <input type="range" class="sl-m" id="sl-im" min="-5" max="5" step="0.1" value="1" oninput="updateIntersection()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-n)"></span><span class="var-name" style="color:var(--c-n)">n</span><span class="var-desc">y절편 y-intercept</span></span>
+          <span class="value" style="color:var(--c-n)" id="val-in">0.00</span>
+        </div>
+        <input type="range" class="sl-n" id="sl-in" min="-10" max="10" step="0.1" value="0" oninput="updateIntersection()">
+      </div>
+    </div>
+
+    <div class="card-title">이차함수 포물선 Quadratic</div>
+    <div class="card">
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">이차항의 계수 Leading coeff.</span></span>
+          <span class="value" style="color:var(--c-a)" id="val-ia">1.00</span>
+        </div>
+        <input type="range" class="sl-a" id="sl-ia" min="-5" max="5" step="0.1" value="1" oninput="updateIntersection()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label">
+          <span class="name"><span class="dot" style="background:var(--c-c)"></span><span class="var-name" style="color:var(--c-c)">c</span><span class="var-desc">상수항 Constant</span></span>
+          <span class="value" style="color:var(--c-c)" id="val-ic">0.00</span>
+        </div>
+        <input type="range" class="sl-c" id="sl-ic" min="-10" max="10" step="0.1" value="0" oninput="updateIntersection()">
+      </div>
+    </div>
+
+    <div class="card-title">분석 결과 Analysis</div>
+    <div class="card">
+      <div class="info-grid">
+        <div class="info-item cc" style="grid-column:1/3"><label>교차점 Intersection Points</label><div class="val" id="info-ipts" style="font-size:0.82rem">계산 중...</div></div>
+        <div class="info-item ca"><label>넓이 Area</label><div class="val" id="info-area">0.00</div></div>
+        <div class="info-item cb"><label>적분 구간 Interval</label><div class="val" id="info-intrange">-</div></div>
+        <div class="info-item cd" style="grid-column:1/3"><label>정적분 Definite Integral</label><div class="val" id="info-integral" style="font-size:0.82rem">-</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== 매개변수 ===================== -->
+<div class="tab-content" id="tab-parametric">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>매개변수 곡선</h2>
+      <span class="en">Parametric Curves</span>
+    </div>
+    <div class="equation-display" id="eq-param">x = cos(t), y = sin(t)</div>
+    <div class="plot-container" id="plot-param"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetParam()">초기화</button>
+    <div class="card-title">곡선 유형 Curve Type</div>
+    <div class="card">
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-curve="circle" onclick="setParamCurve(this)">원/타원 Ellipse</button>
+        <button class="toggle-btn" data-curve="lissajous" onclick="setParamCurve(this)">리사주 Lissajous</button>
+        <button class="toggle-btn" data-curve="spiral" onclick="setParamCurve(this)">나선 Spiral</button>
+        <button class="toggle-btn" data-curve="heart" onclick="setParamCurve(this)">하트 Heart</button>
+      </div>
+    </div>
+    <div class="card-title">변수 조절 Variables</div>
+    <div class="card">
+      <div id="param-sliders"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ===================== 극좌표 ===================== -->
+<div class="tab-content" id="tab-polar">
+<div class="split">
+  <div class="graph-side">
+    <div class="section-header">
+      <h2>극좌표</h2>
+      <span class="en">Polar Coordinates</span>
+    </div>
+    <div class="equation-display" id="eq-polar">r = 1.0 + 1.0 cos(θ)</div>
+    <div class="plot-container" id="plot-polar"></div>
+  </div>
+  <div class="side">
+    <button class="reset-btn" onclick="resetPolar()">초기화</button>
+    <div class="card-title">곡선 유형 Curve Type</div>
+    <div class="card">
+      <div class="toggle-group">
+        <button class="toggle-btn active" data-polar="cardioid" onclick="setPolarType(this)">심장선 Cardioid</button>
+        <button class="toggle-btn" data-polar="rose" onclick="setPolarType(this)">장미 곡선 Rose</button>
+        <button class="toggle-btn" data-polar="spiral" onclick="setPolarType(this)">아르키메데스 나선</button>
+        <button class="toggle-btn" data-polar="lemniscate" onclick="setPolarType(this)">렘니스케이트</button>
+      </div>
+    </div>
+    <div class="card-title">변수 조절 Variables</div>
+    <div class="card">
+      <div id="polar-sliders"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+// ===== Plotly defaults =====
+const LAYOUT_BASE = {
+  paper_bgcolor: '#1a1a2e',
+  plot_bgcolor: '#0f0f1a',
+  font: { color: '#aaa', family: 'Segoe UI', size: 11 },
+  margin: { t: 20, b: 45, l: 50, r: 20 },
+  xaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.2)', zerolinewidth: 2 },
+  yaxis: { gridcolor: 'rgba(255,255,255,0.06)', zerolinecolor: 'rgba(255,255,255,0.2)', zerolinewidth: 2 },
+  showlegend: false,
+  hovermode: 'closest'
+};
+function makeLayout(extra = {}) { return { ...JSON.parse(JSON.stringify(LAYOUT_BASE)), ...extra }; }
+const CONFIG = { responsive: true, displayModeBar: false };
+function linspace(a, b, n) { const arr=[]; const s=(b-a)/(n-1); for(let i=0;i<n;i++) arr.push(a+s*i); return arr; }
+
+// Variable colors
+const VC = { a:'#ff6b8a', b:'#58a6ff', c:'#64ffda', d:'#f9a825', m:'#58a6ff', n:'#bb86fc' };
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.dispatchEvent(new Event('resize'));
+  });
+});
+
+// Colored equation helper
+function cvar(color, text) { return `<span class="eq-var" style="color:${color}">${text}</span>`; }
+function signStr(v) { return v >= 0 ? '+' : '-'; }
+function absF(v) { return Math.abs(v).toFixed(1); }
+
+// ===== 일차함수 =====
+function updateLinear() {
+  const a = parseFloat(document.getElementById('sl-la').value);
+  const b = parseFloat(document.getElementById('sl-lb').value);
+  document.getElementById('val-la').textContent = a.toFixed(2);
+  document.getElementById('val-lb').textContent = b.toFixed(2);
+
+  document.getElementById('eq-linear').innerHTML =
+    `y = ${cvar(VC.a, a.toFixed(1))}x ${signStr(b)} ${cvar(VC.b, absF(b))}`;
+
+  const x = linspace(-10,10,200);
+  const y = x.map(xi => a*xi+b);
+  Plotly.react('plot-linear',[{ x,y,type:'scatter',mode:'lines',line:{color:'#58a6ff',width:3} }],
+    makeLayout({xaxis:{...LAYOUT_BASE.xaxis,range:[-10,10],title:'x'},yaxis:{...LAYOUT_BASE.yaxis,range:[-15,15],title:'y'}}),CONFIG);
+
+  document.getElementById('info-slope').textContent = a.toFixed(2);
+  document.getElementById('info-yint').textContent = b.toFixed(2);
+  document.getElementById('info-xint').textContent = a!==0?(-b/a).toFixed(2):'없음';
+  document.getElementById('info-yat1').textContent = (a+b).toFixed(2);
+}
+function resetLinear() { document.getElementById('sl-la').value=1; document.getElementById('sl-lb').value=0; updateLinear(); }
+
+// ===== 이차함수 =====
+let quadFeatures = { vertex:true, axis:true, derivative:false };
+function toggleQuadFeature(btn,f) { quadFeatures[f]=!quadFeatures[f]; btn.classList.toggle('active'); updateQuad(); }
+
+function updateQuad() {
+  const a=parseFloat(document.getElementById('sl-qa').value);
+  const b=parseFloat(document.getElementById('sl-qb').value);
+  const c=parseFloat(document.getElementById('sl-qc').value);
+  document.getElementById('val-qa').textContent=a.toFixed(2);
+  document.getElementById('val-qb').textContent=b.toFixed(2);
+  document.getElementById('val-qc').textContent=c.toFixed(2);
+
+  document.getElementById('eq-quad').innerHTML =
+    `y = ${cvar(VC.a,a.toFixed(1))}x² ${signStr(b)} ${cvar(VC.b,absF(b))}x ${signStr(c)} ${cvar(VC.c,absF(c))}`;
+
+  const x=linspace(-10,10,400);
+  const y=x.map(xi=>a*xi*xi+b*xi+c);
+  const traces=[{x,y,type:'scatter',mode:'lines',line:{color:'#e94560',width:3},name:'f(x)'}];
+  const vx=a!==0?-b/(2*a):0;
+  const vy=a*vx*vx+b*vx+c;
+
+  if(quadFeatures.vertex) traces.push({x:[vx],y:[vy],type:'scatter',mode:'markers',marker:{color:'#64ffda',size:12,symbol:'diamond'},name:'꼭짓점'});
+  if(quadFeatures.axis) traces.push({x:[vx,vx],y:[-20,20],type:'scatter',mode:'lines',line:{color:'rgba(100,255,218,0.3)',width:1,dash:'dash'},name:'대칭축'});
+  if(quadFeatures.derivative) {
+    const dy=x.map(xi=>2*a*xi+b);
+    traces.push({x,y:dy,type:'scatter',mode:'lines',line:{color:'#bb86fc',width:2,dash:'dot'},name:"f'(x)"});
+    document.getElementById('deriv-quad').style.display='block';
+    document.getElementById('deriv-quad').textContent=`f'(x) = ${(2*a).toFixed(2)}x ${signStr(b)} ${Math.abs(b).toFixed(2)}`;
+  } else { document.getElementById('deriv-quad').style.display='none'; }
+
+  Plotly.react('plot-quad',traces,makeLayout({xaxis:{...LAYOUT_BASE.xaxis,range:[-10,10],title:'x'},yaxis:{...LAYOUT_BASE.yaxis,range:[-15,15],title:'y'}}),CONFIG);
+
+  document.getElementById('info-vertex').textContent=`(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
+  document.getElementById('info-axis').textContent=`x = ${vx.toFixed(2)}`;
+  const D=b*b-4*a*c;
+  document.getElementById('info-disc').textContent=D.toFixed(2);
+  if(a===0) document.getElementById('info-roots').textContent=b!==0?`x = ${(-c/b).toFixed(2)}`:'모든 x';
+  else if(D>0){ const r1=(-b+Math.sqrt(D))/(2*a),r2=(-b-Math.sqrt(D))/(2*a); document.getElementById('info-roots').textContent=`x = ${r1.toFixed(2)}, ${r2.toFixed(2)}`; }
+  else if(D===0) document.getElementById('info-roots').textContent=`x = ${(-b/(2*a)).toFixed(2)} (중근)`;
+  else document.getElementById('info-roots').textContent='허근 (실근 없음)';
+}
+function resetQuad() { document.getElementById('sl-qa').value=1; document.getElementById('sl-qb').value=0; document.getElementById('sl-qc').value=0; updateQuad(); }
+
+// ===== 삼각함수 =====
+let trigFn='sin';
+let trigOpts={components:false,derivative:false,integralFill:false};
+let trigExtra={B2:1,C2:0};
+
+function setTrigFn(btn) {
+  document.querySelectorAll('#trig-basic-group .toggle-btn,#trig-combo-group .toggle-btn,#trig-inv-group .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  trigFn=btn.dataset.fn;
+  buildTrigExtraSliders();
+  updateTrig();
+}
+function toggleTrigOpt(btn,opt) { trigOpts[opt]=!trigOpts[opt]; btn.classList.toggle('active'); updateTrig(); }
+
+const comboFns=['sin+cos','sin-cos','sin*cos'];
+function buildTrigExtraSliders() {
+  const c=document.getElementById('trig-extra-sliders');
+  if(comboFns.includes(trigFn)){
+    c.innerHTML=`
+      <div class="section-label" style="margin-top:8px">두 번째 함수 2nd function</div>
+      <div class="slider-item">
+        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">B₂</span><span class="var-desc">주파수 Frequency</span></span>
+        <span class="value" style="color:var(--c-b)" id="val-tb2">${trigExtra.B2.toFixed(2)}</span></div>
+        <input type="range" class="sl-b" id="sl-tb2" min="0.1" max="6" step="0.1" value="${trigExtra.B2}" oninput="trigExtra.B2=parseFloat(this.value);document.getElementById('val-tb2').textContent=trigExtra.B2.toFixed(2);updateTrig()">
+      </div>
+      <div class="slider-item">
+        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-c)"></span><span class="var-name" style="color:var(--c-c)">C₂</span><span class="var-desc">위상 Phase</span></span>
+        <span class="value" style="color:var(--c-c)" id="val-tc2">${trigExtra.C2.toFixed(2)}</span></div>
+        <input type="range" class="sl-c" id="sl-tc2" min="-6.28" max="6.28" step="0.05" value="${trigExtra.C2}" oninput="trigExtra.C2=parseFloat(this.value);document.getElementById('val-tc2').textContent=trigExtra.C2.toFixed(2);updateTrig()">
+      </div>`;
+  } else { c.innerHTML=''; }
+}
+
+function trigEval(fn,x,A,B,C,D) {
+  const CLIP=20; const disc=['tan','cot','sec','csc'].includes(fn);
+  const B2=trigExtra.B2,C2=trigExtra.C2;
+  return x.map(xi=>{
+    let v; const a1=B*xi+C, a2=B2*xi+C2;
+    switch(fn){
+      case 'sin':v=A*Math.sin(a1)+D;break;case 'cos':v=A*Math.cos(a1)+D;break;
+      case 'tan':v=A*Math.tan(a1)+D;break;
+      case 'cot':{const t=Math.tan(a1);v=Math.abs(t)<1e-10?null:A*(1/t)+D;}break;
+      case 'sec':{const c=Math.cos(a1);v=Math.abs(c)<1e-10?null:A*(1/c)+D;}break;
+      case 'csc':{const s=Math.sin(a1);v=Math.abs(s)<1e-10?null:A*(1/s)+D;}break;
+      case 'sin+cos':v=A*(Math.sin(a1)+Math.cos(a2))+D;break;
+      case 'sin-cos':v=A*(Math.sin(a1)-Math.cos(a2))+D;break;
+      case 'sin*cos':v=A*Math.sin(a1)*Math.cos(a2)+D;break;
+      case 'sin2':v=A*Math.pow(Math.sin(a1),2)+D;break;
+      case 'cos2':v=A*Math.pow(Math.cos(a1),2)+D;break;
+      case 'sin2+cos2':v=A*1+D;break;
+      case 'asin':v=(xi>=-1&&xi<=1)?A*Math.asin(xi)+D:null;break;
+      case 'acos':v=(xi>=-1&&xi<=1)?A*Math.acos(xi)+D:null;break;
+      case 'atan':v=A*Math.atan(xi)+D;break;
+      default:v=A*Math.sin(a1)+D;
+    }
+    if(v!==null&&disc&&Math.abs(v)>CLIP)return null;
+    return v;
+  });
+}
+
+function trigDescriptions(fn) {
+  const d={
+    sin:'사인 함수 (Sine) - 가장 기본적인 삼각함수',
+    cos:'코사인 함수 (Cosine) - sin보다 π/2 앞선 위상',
+    tan:'탄젠트 함수 (Tangent) = sin/cos, π마다 점근선',
+    cot:'코탄젠트 함수 (Cotangent) = cos/sin, tan의 역수',
+    sec:'시컨트 함수 (Secant) = 1/cos',
+    csc:'코시컨트 함수 (Cosecant) = 1/sin',
+    'sin+cos':'합: sin + cos = √2 sin(x + π/4)  합성 공식',
+    'sin-cos':'차: sin - cos = √2 sin(x - π/4)  합성 공식',
+    'sin*cos':'곱: sin × cos = ½ sin(2x)  곱을 합으로 공식',
+    sin2:'sin² = (1 - cos2x)/2  반각 공식 Half-angle',
+    cos2:'cos² = (1 + cos2x)/2  반각 공식 Half-angle',
+    'sin2+cos2':'sin² + cos² = 1  삼각함수의 항등식!',
+    asin:'아크사인 (Arcsine) - 정의역 [-1,1], 치역 [-π/2, π/2]',
+    acos:'아크코사인 (Arccosine) - 정의역 [-1,1], 치역 [0, π]',
+    atan:'아크탄젠트 (Arctangent) - 모든 실수, 치역 (-π/2, π/2)'
+  };
+  return d[fn]||'';
+}
+
+function trigEqHTML(fn,A,B,C,D) {
+  const ca=VC.a, cb=VC.b, cc=VC.c, cd=VC.d;
+  const sA=cvar(ca,A.toFixed(1)), sB=cvar(cb,B.toFixed(1)), sC=cvar(cc,absF(C)), sD=cvar(cd,absF(D));
+  const cS=signStr(C), dS=signStr(D);
+  const arg1=`${sB}x ${cS} ${sC}`;
+  const B2=trigExtra.B2, C2=trigExtra.C2;
+  const sB2=cvar(cb,B2.toFixed(1)), sC2=cvar(cc,absF(C2));
+  const arg2=`${sB2}x ${signStr(C2)} ${sC2}`;
+  const tail=` ${dS} ${sD}`;
+  const m={
+    sin:`y = ${sA} sin(${arg1})${tail}`,
+    cos:`y = ${sA} cos(${arg1})${tail}`,
+    tan:`y = ${sA} tan(${arg1})${tail}`,
+    cot:`y = ${sA} cot(${arg1})${tail}`,
+    sec:`y = ${sA} sec(${arg1})${tail}`,
+    csc:`y = ${sA} csc(${arg1})${tail}`,
+    'sin+cos':`y = ${sA}[sin(${arg1}) + cos(${arg2})]${tail}`,
+    'sin-cos':`y = ${sA}[sin(${arg1}) - cos(${arg2})]${tail}`,
+    'sin*cos':`y = ${sA} sin(${arg1})cos(${arg2})${tail}`,
+    sin2:`y = ${sA} sin²(${arg1})${tail}`,
+    cos2:`y = ${sA} cos²(${arg1})${tail}`,
+    'sin2+cos2':`y = ${sA}[sin²(${arg1}) + cos²(${arg1})]${tail}`,
+    asin:`y = ${sA} arcsin(x)${tail}`,
+    acos:`y = ${sA} arccos(x)${tail}`,
+    atan:`y = ${sA} arctan(x)${tail}`
+  };
+  return m[fn]||'';
+}
+
+function trigDerivStr(fn,A,B,C){
+  const ab=(A*B).toFixed(2), nab=(-A*B).toFixed(2);
+  const arg=`${B.toFixed(1)}x ${signStr(C)} ${absF(C)}`;
+  const d={
+    sin:`f'(x) = ${ab} cos(${arg})`, cos:`f'(x) = ${nab} sin(${arg})`,
+    tan:`f'(x) = ${ab} sec²(${arg})`, cot:`f'(x) = ${nab} csc²(${arg})`,
+    sec:`f'(x) = ${ab} sec(${arg})tan(${arg})`, csc:`f'(x) = ${nab} csc(${arg})cot(${arg})`,
+    sin2:`f'(x) = ${(A*B).toFixed(2)} sin(2(${arg}))`, cos2:`f'(x) = ${(-A*B).toFixed(2)} sin(2(${arg}))`,
+    'sin2+cos2':`f'(x) = 0  (항등식의 도함수 = 0)`,
+    asin:`f'(x) = ${A.toFixed(2)} / √(1-x²)`, acos:`f'(x) = ${(-A).toFixed(2)} / √(1-x²)`,
+    atan:`f'(x) = ${A.toFixed(2)} / (1+x²)`
+  };
+  return d[fn]||"f'(x) = (수치 미분)";
+}
+
+function numDeriv(x,y){
+  const dy=[];
+  for(let i=0;i<x.length;i++){
+    if(i===0) dy.push(y[1]!=null&&y[0]!=null?(y[1]-y[0])/(x[1]-x[0]):null);
+    else if(i===x.length-1) dy.push(y[i]!=null&&y[i-1]!=null?(y[i]-y[i-1])/(x[i]-x[i-1]):null);
+    else { if(y[i-1]==null||y[i+1]==null) dy.push(null); else dy.push((y[i+1]-y[i-1])/(x[i+1]-x[i-1])); }
+  }
+  return dy.map(v=>v!=null&&Math.abs(v)>50?null:v);
+}
+
+function updateTrig() {
+  const A=parseFloat(document.getElementById('sl-ta').value);
+  const B=parseFloat(document.getElementById('sl-tb').value);
+  const C=parseFloat(document.getElementById('sl-tc').value);
+  const D=parseFloat(document.getElementById('sl-td').value);
+  document.getElementById('val-ta').textContent=A.toFixed(2);
+  document.getElementById('val-tb').textContent=B.toFixed(2);
+  document.getElementById('val-tc').textContent=C.toFixed(2);
+  document.getElementById('val-td').textContent=D.toFixed(2);
+
+  document.getElementById('eq-trig').innerHTML=trigEqHTML(trigFn,A,B,C,D);
+
+  const isInv=['asin','acos','atan'].includes(trigFn);
+  const xR=isInv?(trigFn==='atan'?[-10,10]:[-1.05,1.05]):[-4*Math.PI,4*Math.PI];
+  const x=linspace(xR[0],xR[1],1200);
+  const y=trigEval(trigFn,x,A,B,C,D);
+
+  const traces=[{x,y,type:'scatter',mode:'lines',line:{color:'#f9a825',width:3},connectgaps:false,name:trigFn}];
+
+  if(trigOpts.components&&comboFns.includes(trigFn)){
+    const ys=x.map(xi=>A*Math.sin(B*xi+C));
+    const yc=x.map(xi=>{const v=trigFn==='sin-cos'?-Math.cos(trigExtra.B2*xi+trigExtra.C2):Math.cos(trigExtra.B2*xi+trigExtra.C2);return A*v;});
+    traces.push({x,y:ys,type:'scatter',mode:'lines',line:{color:'rgba(88,166,255,0.5)',width:1.5,dash:'dash'},connectgaps:false,name:'sin 성분'});
+    traces.push({x,y:yc,type:'scatter',mode:'lines',line:{color:'rgba(233,69,96,0.5)',width:1.5,dash:'dash'},connectgaps:false,name:trigFn==='sin-cos'?'-cos 성분':'cos 성분'});
+  }
+  if(trigOpts.components&&trigFn==='sin2+cos2'){
+    traces.push({x,y:x.map(xi=>A*Math.pow(Math.sin(B*xi+C),2)+D),type:'scatter',mode:'lines',line:{color:'rgba(88,166,255,0.6)',width:1.5,dash:'dash'},name:'sin²'});
+    traces.push({x,y:x.map(xi=>A*Math.pow(Math.cos(B*xi+C),2)+D),type:'scatter',mode:'lines',line:{color:'rgba(233,69,96,0.6)',width:1.5,dash:'dash'},name:'cos²'});
+  }
+
+  if(!isInv&&!['sin2+cos2'].includes(trigFn)){
+    traces.push({x,y:trigEval(trigFn,x,1,1,0,0),type:'scatter',mode:'lines',line:{color:'rgba(255,255,255,0.1)',width:1,dash:'dot'},connectgaps:false,name:'기본형'});
+  }
+
+  if(trigOpts.derivative){
+    traces.push({x,y:numDeriv(x,y),type:'scatter',mode:'lines',line:{color:'#bb86fc',width:2,dash:'dashdot'},connectgaps:false,name:"f'(x)"});
+    document.getElementById('trig-deriv-eq').style.display='block';
+    document.getElementById('trig-deriv-eq').textContent=trigDerivStr(trigFn,A,B,C);
+  } else { document.getElementById('trig-deriv-eq').style.display='none'; }
+
+  if(trigOpts.integralFill&&!isInv){
+    const p=2*Math.PI/B, fx=linspace(0,p,300), fy=trigEval(trigFn,fx,A,B,C,D);
+    traces.push({x:fx,y:fx.map(()=>0),type:'scatter',mode:'lines',line:{color:'transparent'},showlegend:false});
+    traces.push({x:fx,y:fy,type:'scatter',mode:'lines',fill:'tonexty',fillcolor:'rgba(100,255,218,0.15)',line:{color:'rgba(100,255,218,0.4)',width:1},connectgaps:false,name:'적분 영역'});
+  }
+
+  const xaxis=isInv?{...LAYOUT_BASE.xaxis,range:xR,title:'x'}:
+    {...LAYOUT_BASE.xaxis,range:xR,title:'x',tickvals:[-4*Math.PI,-3*Math.PI,-2*Math.PI,-Math.PI,0,Math.PI,2*Math.PI,3*Math.PI,4*Math.PI],ticktext:['-4π','-3π','-2π','-π','0','π','2π','3π','4π']};
+
+  Plotly.react('plot-trig',traces,makeLayout({xaxis,yaxis:{...LAYOUT_BASE.yaxis,range:isInv?[-4,4]:[-8,8],title:'y'},showlegend:true,legend:{x:0.01,y:0.99,bgcolor:'rgba(0,0,0,0.5)',font:{size:10,color:'#aaa'}}}),CONFIG);
+
+  document.getElementById('info-amp').textContent=Math.abs(A).toFixed(2);
+  document.getElementById('info-period').textContent=isInv?'-':(2*Math.PI/Math.abs(B)).toFixed(2);
+  document.getElementById('info-phase').textContent=isInv?'-':(-C/B).toFixed(2);
+  document.getElementById('info-vshift').textContent=D.toFixed(2);
+  document.getElementById('info-trig-desc').textContent=trigDescriptions(trigFn);
+}
+
+function resetTrig(){
+  document.getElementById('sl-ta').value=1;document.getElementById('sl-tb').value=1;
+  document.getElementById('sl-tc').value=0;document.getElementById('sl-td').value=0;
+  trigFn='sin'; trigExtra={B2:1,C2:0}; trigOpts={components:false,derivative:false,integralFill:false};
+  document.querySelectorAll('#trig-basic-group .toggle-btn,#trig-combo-group .toggle-btn,#trig-inv-group .toggle-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#trig-basic-group .toggle-btn[data-fn="sin"]').classList.add('active');
+  document.querySelectorAll('#trig-show-components,#trig-show-derivative,#trig-show-integral').forEach(b=>b.classList.remove('active'));
+  buildTrigExtraSliders(); updateTrig();
+}
+
+// ===== 교차 영역 =====
+function updateIntersection() {
+  const m=parseFloat(document.getElementById('sl-im').value);
+  const n=parseFloat(document.getElementById('sl-in').value);
+  const a=parseFloat(document.getElementById('sl-ia').value);
+  const c=parseFloat(document.getElementById('sl-ic').value);
+  document.getElementById('val-im').textContent=m.toFixed(2);
+  document.getElementById('val-in').textContent=n.toFixed(2);
+  document.getElementById('val-ia').textContent=a.toFixed(2);
+  document.getElementById('val-ic').textContent=c.toFixed(2);
+
+  document.getElementById('eq-int-line').innerHTML=
+    `y = ${cvar(VC.m,m.toFixed(1))}x ${signStr(n)} ${cvar(VC.n,absF(n))}`;
+  document.getElementById('eq-int-quad').innerHTML=
+    `y = ${cvar(VC.a,a.toFixed(1))}x² ${signStr(c)} ${cvar(VC.c,absF(c))}`;
+
+  const x=linspace(-10,10,500);
+  const yL=x.map(xi=>m*xi+n), yQ=x.map(xi=>a*xi*xi+c);
+  const A=a,B=-m,C2=c-n, D=B*B-4*A*C2;
+
+  const traces=[
+    {x,y:yL,type:'scatter',mode:'lines',line:{color:'#58a6ff',width:3},name:'일차함수 (직선)'},
+    {x,y:yQ,type:'scatter',mode:'lines',line:{color:'#e94560',width:3},name:'이차함수 (포물선)'}
+  ];
+  let area=0,rangeStr='-',intStr='-',ptsStr='교차점 없음';
+
+  if(A!==0&&D>=0){
+    const x1=(-B-Math.sqrt(Math.max(0,D)))/(2*A), x2=(-B+Math.sqrt(Math.max(0,D)))/(2*A);
+    const lo=Math.min(x1,x2), hi=Math.max(x1,x2);
+    if(D>0){
+      const fx=linspace(lo,hi,200), fyl=fx.map(xi=>m*xi+n), fyq=fx.map(xi=>a*xi*xi+c);
+      traces.push({x:fx,y:fyl,type:'scatter',mode:'lines',line:{color:'transparent'},showlegend:false});
+      traces.push({x:fx,y:fyq,type:'scatter',mode:'lines',fill:'tonexty',fillcolor:'rgba(100,255,218,0.25)',line:{color:'transparent'},name:'넓이 Area'});
+      traces.push({x:[lo,hi],y:[m*lo+n,m*hi+n],type:'scatter',mode:'markers',marker:{color:'#64ffda',size:10},name:'교차점'});
+      const F=t=>-a*t*t*t/3+m*t*t/2+(n-c)*t;
+      area=Math.abs(F(hi)-F(lo));
+      ptsStr=`(${lo.toFixed(2)}, ${(m*lo+n).toFixed(2)}), (${hi.toFixed(2)}, ${(m*hi+n).toFixed(2)})`;
+      rangeStr=`[${lo.toFixed(2)}, ${hi.toFixed(2)}]`;
+      intStr=`∫|f(x)-g(x)|dx = ${area.toFixed(4)}`;
+    } else {
+      ptsStr=`(${lo.toFixed(2)}, ${(m*lo+n).toFixed(2)}) (접점 Tangent)`;
+      traces.push({x:[lo],y:[m*lo+n],type:'scatter',mode:'markers',marker:{color:'#64ffda',size:10}});
+    }
+  } else if(A===0){ ptsStr=n===c?'무한히 많은 교차점':'교차점 없음'; }
+
+  Plotly.react('plot-intersection',traces,makeLayout({
+    xaxis:{...LAYOUT_BASE.xaxis,range:[-8,8],title:'x'},yaxis:{...LAYOUT_BASE.yaxis,range:[-15,15],title:'y'},
+    showlegend:true,legend:{x:0.02,y:0.98,bgcolor:'rgba(0,0,0,0.5)',font:{size:10}}
+  }),CONFIG);
+
+  document.getElementById('info-ipts').textContent=ptsStr;
+  document.getElementById('info-area').textContent=area.toFixed(4);
+  document.getElementById('info-intrange').textContent=rangeStr;
+  document.getElementById('info-integral').textContent=intStr;
+}
+function resetIntersection(){
+  document.getElementById('sl-im').value=1;document.getElementById('sl-in').value=0;
+  document.getElementById('sl-ia').value=1;document.getElementById('sl-ic').value=0;
+  updateIntersection();
+}
+
+// ===== 매개변수 =====
+let paramCurve='circle';
+function setParamCurve(btn){
+  document.querySelectorAll('#tab-parametric .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); paramCurve=btn.dataset.curve; buildParamSliders(); updateParam();
+}
+function buildParamSliders(){
+  const el=document.getElementById('param-sliders');
+  const s={
+    circle:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">x축 반지름 x-radius</span></span><span class="value" style="color:var(--c-a)" id="val-pa">2.00</span></div><input type="range" class="sl-a" id="sl-pa" min="0.1" max="5" step="0.1" value="2" oninput="updateParam()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">b</span><span class="var-desc">y축 반지름 y-radius</span></span><span class="value" style="color:var(--c-b)" id="val-pb">1.00</span></div><input type="range" class="sl-b" id="sl-pb" min="0.1" max="5" step="0.1" value="1" oninput="updateParam()"></div>`,
+    lissajous:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">A</span><span class="var-desc">x 주파수 x-freq</span></span><span class="value" style="color:var(--c-a)" id="val-pa">3.00</span></div><input type="range" class="sl-a" id="sl-pa" min="1" max="8" step="1" value="3" oninput="updateParam()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">B</span><span class="var-desc">y 주파수 y-freq</span></span><span class="value" style="color:var(--c-b)" id="val-pb">2.00</span></div><input type="range" class="sl-b" id="sl-pb" min="1" max="8" step="1" value="2" oninput="updateParam()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-c)"></span><span class="var-name" style="color:var(--c-c)">δ</span><span class="var-desc">위상차 Phase diff</span></span><span class="value" style="color:var(--c-c)" id="val-pd">1.57</span></div><input type="range" class="sl-c" id="sl-pd" min="0" max="6.28" step="0.05" value="1.57" oninput="updateParam()"></div>`,
+    spiral:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">성장률 Growth rate</span></span><span class="value" style="color:var(--c-a)" id="val-pa">0.10</span></div><input type="range" class="sl-a" id="sl-pa" min="0.01" max="0.5" step="0.01" value="0.1" oninput="updateParam()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">n</span><span class="var-desc">회전 수 Turns</span></span><span class="value" style="color:var(--c-b)" id="val-pb">6.00</span></div><input type="range" class="sl-b" id="sl-pb" min="1" max="15" step="0.5" value="6" oninput="updateParam()"></div>`,
+    heart:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">s</span><span class="var-desc">크기 Scale</span></span><span class="value" style="color:var(--c-a)" id="val-pa">2.00</span></div><input type="range" class="sl-a" id="sl-pa" min="0.5" max="5" step="0.1" value="2" oninput="updateParam()"></div>`
+  };
+  el.innerHTML=s[paramCurve];
+}
+
+function updateParam(){
+  const t=linspace(0,2*Math.PI,1000); let x,y,eq;
+  if(paramCurve==='circle'){
+    const a=parseFloat(document.getElementById('sl-pa').value),b=parseFloat(document.getElementById('sl-pb').value);
+    document.getElementById('val-pa').textContent=a.toFixed(2);document.getElementById('val-pb').textContent=b.toFixed(2);
+    x=t.map(ti=>a*Math.cos(ti)); y=t.map(ti=>b*Math.sin(ti));
+    eq=`x = ${cvar(VC.a,a.toFixed(1))}cos(t),  y = ${cvar(VC.b,b.toFixed(1))}sin(t)`;
+  } else if(paramCurve==='lissajous'){
+    const A=parseFloat(document.getElementById('sl-pa').value),B=parseFloat(document.getElementById('sl-pb').value),d=parseFloat(document.getElementById('sl-pd').value);
+    document.getElementById('val-pa').textContent=A.toFixed(2);document.getElementById('val-pb').textContent=B.toFixed(2);document.getElementById('val-pd').textContent=d.toFixed(2);
+    const tt=linspace(0,2*Math.PI,2000);
+    x=tt.map(ti=>Math.sin(A*ti+d)); y=tt.map(ti=>Math.sin(B*ti));
+    eq=`x = sin(${cvar(VC.a,A.toString())}t + ${cvar(VC.c,d.toFixed(2))}),  y = sin(${cvar(VC.b,B.toString())}t)`;
+  } else if(paramCurve==='spiral'){
+    const a=parseFloat(document.getElementById('sl-pa').value),turns=parseFloat(document.getElementById('sl-pb').value);
+    document.getElementById('val-pa').textContent=a.toFixed(2);document.getElementById('val-pb').textContent=turns.toFixed(2);
+    const tt=linspace(0,turns*2*Math.PI,2000);
+    x=tt.map(ti=>a*ti*Math.cos(ti)); y=tt.map(ti=>a*ti*Math.sin(ti));
+    eq=`x = ${cvar(VC.a,a.toFixed(2))}t·cos(t),  y = ${cvar(VC.a,a.toFixed(2))}t·sin(t)`;
+  } else if(paramCurve==='heart'){
+    const s=parseFloat(document.getElementById('sl-pa').value);
+    document.getElementById('val-pa').textContent=s.toFixed(2);
+    const tt=linspace(0,2*Math.PI,1000);
+    x=tt.map(ti=>s*16*Math.pow(Math.sin(ti),3)/16);
+    y=tt.map(ti=>s*(13*Math.cos(ti)-5*Math.cos(2*ti)-2*Math.cos(3*ti)-Math.cos(4*ti))/16);
+    eq=`하트 곡선 Heart curve (크기 = ${cvar(VC.a,s.toFixed(1))})`;
+  }
+  document.getElementById('eq-param').innerHTML=eq;
+  Plotly.react('plot-param',[{x,y,type:'scatter',mode:'lines',line:{color:'#bb86fc',width:2.5}}],
+    makeLayout({xaxis:{...LAYOUT_BASE.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LAYOUT_BASE.yaxis,title:'y'}}),CONFIG);
+}
+function resetParam(){
+  paramCurve='circle';
+  document.querySelectorAll('#tab-parametric .toggle-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#tab-parametric .toggle-btn[data-curve="circle"]').classList.add('active');
+  buildParamSliders(); updateParam();
+}
+
+// ===== 극좌표 =====
+let polarType='cardioid';
+function setPolarType(btn){
+  document.querySelectorAll('#tab-polar .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); polarType=btn.dataset.polar; buildPolarSliders(); updatePolar();
+}
+function buildPolarSliders(){
+  const el=document.getElementById('polar-sliders');
+  const s={
+    cardioid:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">크기 Size</span></span><span class="value" style="color:var(--c-a)" id="val-poa">1.00</span></div><input type="range" class="sl-a" id="sl-poa" min="0.1" max="5" step="0.1" value="1" oninput="updatePolar()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">b</span><span class="var-desc">변형 Shape</span></span><span class="value" style="color:var(--c-b)" id="val-pob">1.00</span></div><input type="range" class="sl-b" id="sl-pob" min="0" max="5" step="0.1" value="1" oninput="updatePolar()"></div>`,
+    rose:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">크기 Size</span></span><span class="value" style="color:var(--c-a)" id="val-poa">3.00</span></div><input type="range" class="sl-a" id="sl-poa" min="0.5" max="5" step="0.1" value="3" oninput="updatePolar()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">n</span><span class="var-desc">꽃잎 수 Petals</span></span><span class="value" style="color:var(--c-b)" id="val-pob">3.00</span></div><input type="range" class="sl-b" id="sl-pob" min="1" max="8" step="1" value="3" oninput="updatePolar()"></div>`,
+    spiral:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a</span><span class="var-desc">성장률 Growth</span></span><span class="value" style="color:var(--c-a)" id="val-poa">0.20</span></div><input type="range" class="sl-a" id="sl-poa" min="0.05" max="1" step="0.05" value="0.2" oninput="updatePolar()"></div>
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-b)"></span><span class="var-name" style="color:var(--c-b)">n</span><span class="var-desc">회전 수 Turns</span></span><span class="value" style="color:var(--c-b)" id="val-pob">4.00</span></div><input type="range" class="sl-b" id="sl-pob" min="1" max="10" step="0.5" value="4" oninput="updatePolar()"></div>`,
+    lemniscate:`
+      <div class="slider-item"><div class="slider-label"><span class="name"><span class="dot" style="background:var(--c-a)"></span><span class="var-name" style="color:var(--c-a)">a²</span><span class="var-desc">크기 Size</span></span><span class="value" style="color:var(--c-a)" id="val-poa">4.00</span></div><input type="range" class="sl-a" id="sl-poa" min="1" max="10" step="0.5" value="4" oninput="updatePolar()"></div>`
+  };
+  el.innerHTML=s[polarType];
+}
+
+function updatePolar(){
+  const theta=linspace(0,4*Math.PI,2000); let r,eq;
+  if(polarType==='cardioid'){
+    const a=parseFloat(document.getElementById('sl-poa').value),b=parseFloat(document.getElementById('sl-pob').value);
+    document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=b.toFixed(2);
+    r=theta.map(t=>a+b*Math.cos(t));
+    eq=`r = ${cvar(VC.a,a.toFixed(1))} + ${cvar(VC.b,b.toFixed(1))}cos(θ)`;
+  } else if(polarType==='rose'){
+    const a=parseFloat(document.getElementById('sl-poa').value),n=parseFloat(document.getElementById('sl-pob').value);
+    document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=n.toFixed(2);
+    r=theta.map(t=>a*Math.cos(n*t));
+    eq=`r = ${cvar(VC.a,a.toFixed(1))}cos(${cvar(VC.b,n.toString())}θ)`;
+  } else if(polarType==='spiral'){
+    const a=parseFloat(document.getElementById('sl-poa').value),turns=parseFloat(document.getElementById('sl-pob').value);
+    document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=turns.toFixed(2);
+    const th=linspace(0,turns*2*Math.PI,2000); r=th.map(t=>a*t);
+    const x=r.map((ri,i)=>ri*Math.cos(th[i])),y=r.map((ri,i)=>ri*Math.sin(th[i]));
+    eq=`r = ${cvar(VC.a,a.toFixed(2))}θ`;
+    document.getElementById('eq-polar').innerHTML=eq;
+    Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:'#64ffda',width:2.5}}],
+      makeLayout({xaxis:{...LAYOUT_BASE.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LAYOUT_BASE.yaxis,title:'y'}}),CONFIG);
+    return;
+  } else if(polarType==='lemniscate'){
+    const a2=parseFloat(document.getElementById('sl-poa').value);
+    document.getElementById('val-poa').textContent=a2.toFixed(2);
+    const th=linspace(0,2*Math.PI,2000), x=[],y=[];
+    th.forEach(t=>{const c2=Math.cos(2*t);if(c2>=0){const rv=Math.sqrt(a2*c2);x.push(rv*Math.cos(t));y.push(rv*Math.sin(t));}else{x.push(null);y.push(null);}});
+    eq=`r² = ${cvar(VC.a,a2.toFixed(1))}cos(2θ)`;
+    document.getElementById('eq-polar').innerHTML=eq;
+    Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:'#64ffda',width:2.5},connectgaps:false}],
+      makeLayout({xaxis:{...LAYOUT_BASE.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LAYOUT_BASE.yaxis,title:'y'}}),CONFIG);
+    return;
+  }
+  document.getElementById('eq-polar').innerHTML=eq;
+  const x=r.map((ri,i)=>ri*Math.cos(theta[i])),y=r.map((ri,i)=>ri*Math.sin(theta[i]));
+  Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:'#64ffda',width:2.5}}],
+    makeLayout({xaxis:{...LAYOUT_BASE.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LAYOUT_BASE.yaxis,title:'y'}}),CONFIG);
+}
+function resetPolar(){
+  polarType='cardioid';
+  document.querySelectorAll('#tab-polar .toggle-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('#tab-polar .toggle-btn[data-polar="cardioid"]').classList.add('active');
+  buildPolarSliders(); updatePolar();
+}
+
+// ===== Init =====
+window.addEventListener('load',()=>{
+  updateLinear(); updateQuad(); updateTrig(); updateIntersection();
+  buildParamSliders(); updateParam(); buildPolarSliders(); updatePolar();
+});
+</script>
+</body>
+</html>
