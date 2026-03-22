@@ -302,8 +302,8 @@ function drawTriLearnGraph(rad, sinV, cosV) {
   const x = ls(0, 2*Math.PI, 500);
   const ySin = x.map(xi => Math.sin(xi));
   const yCos = x.map(xi => Math.cos(xi));
-  // tan 클리핑: -1.5 ~ 1.5 범위만 (원 크기에 맞춤)
-  const TCLIP = 1.5;
+  // 차트에서는 tan 전체 표시 (점근선 근처만 클리핑)
+  const TCLIP = 6;
   const yTan = x.map(xi => { const v = Math.tan(xi); return Math.abs(v) > TCLIP ? null : v; });
 
   const tanV = Math.abs(cosV) < 1e-10 ? null : sinV / cosV;
@@ -331,24 +331,24 @@ function drawTriLearnGraph(rad, sinV, cosV) {
 
   Plotly.react('plot-trilearn', tr, ml({
     xaxis:{...LB.xaxis, range:[0, 2*Math.PI], title:'θ  (라디안 rad / 각도 deg)', ...piT, tickangle:0},
-    yaxis:{...LB.yaxis, range:[-1.8,1.8], title:'값', dtick:0.5},
-    height: 350,
-    margin:{t:40, b:70, l:50, r:20},
-    showlegend:true,
-    legend:{orientation:'h', x:0.5, xanchor:'center', y:1.08, font:{size:10}}
+    yaxis:{...LB.yaxis, range:[-1.5,1.5], title:'값', dtick:1},
+    height: window.innerWidth < 768 ? 200 : 280,
+    margin:{t:10, b:55, l:40, r:12},
+    showlegend:false
   }), CFG);
 }
 
 function drawUnitCircle(deg, rad, cosV, sinV) {
   const canvas = document.getElementById('cv-trilearn');
   if (!canvas) return;
-  const rect = canvas.parentElement.getBoundingClientRect();
-  const size = Math.min(rect.width, rect.height) || 500;
+  // Reset canvas size first so parent can shrink
+  canvas.style.width = '100%'; canvas.style.height = '100%';
+  const size = canvas.parentElement.offsetWidth || 200;
   canvas.width = size * 2; canvas.height = size * 2;
   canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(2, 2); // retina
-  const cx = size / 2, cy = size / 2, r = size * 0.35;
+  const cx = size / 2, cy = size / 2, r = size * 0.42;
 
   // Get theme colors
   const cs = getComputedStyle(document.body);
@@ -424,7 +424,8 @@ function drawUnitCircle(deg, rad, cosV, sinV) {
     const tanLen = sinV / cosV;
     const tanPx = cx + r, tanPy = cy - r * tanLen;
     // Clip to reasonable range
-    if (Math.abs(tanLen) < 1.5) {
+    const dg = deg % 360;
+    if (Math.abs(tanLen) < 1.2 && ((dg>=0&&dg<=45)||(dg>=135&&dg<=225)||(dg>=315&&dg<=360))) {
       ctx.strokeStyle = '#10b981';
       ctx.lineWidth = 2;
       ctx.setLineDash([4, 4]);

@@ -118,13 +118,15 @@
     position: relative;
     width: 100%;
     aspect-ratio: 1;
-    max-width: 250px;
+    max-width: 200px;
     margin: 0 auto;
+    overflow: hidden;
   }
   .unit-circle-wrap canvas {
     width: 100%;
     height: 100%;
     display: block;
+    object-fit: contain;
   }
   .trig-ratios {
     display: grid;
@@ -145,16 +147,17 @@
   /* Trilearn mid section: circle + controls side by side */
   .trilearn-mid {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 16px;
+    grid-template-columns: 200px 1fr;
+    gap: 10px;
     align-items: start;
   }
-  .trilearn-mid .unit-circle-wrap { max-width: 250px; }
+  .trilearn-mid .unit-circle-wrap { max-width: 200px; }
   .trilearn-controls { min-width: 0; }
 
   @media (max-width: 768px) {
     .trilearn-mid { grid-template-columns: 1fr; }
-    .trilearn-mid .unit-circle-wrap { max-width: 100%; }
+    .trilearn-mid .unit-circle-wrap { max-width: 200px; margin: 0 auto; }
+    #plot-trilearn { min-height: 180px !important; }
   }
 
   /* Info description box */
@@ -366,7 +369,7 @@
     <div class="sec-hdr"><h2>삼각비와 단위원</h2><span class="en">Trigonometric Ratios & Unit Circle</span></div>
 
     <!-- 1. sin/cos/tan 그래프 -->
-    <div class="plot-box" id="plot-trilearn" style="min-height:220px; margin-bottom:10px;"></div>
+    <div class="plot-box" id="plot-trilearn" style="min-height:220px; margin-bottom:4px;"></div>
 
     <!-- 2. 단위원 + 슬라이더 가로 배치 -->
     <div class="trilearn-mid">
@@ -375,13 +378,9 @@
       </div>
       <div class="trilearn-controls">
         <div class="yk-panel" style="margin-bottom:10px">
-          <div class="yk-panel-title"><div class="yk-dot"></div>각도 조절 Angle</div>
-          <div class="sl-item">
-            <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">각도 Degrees</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-deg">45°</span></div>
-            <input type="range" class="sl-d" id="sl-tl-deg" min="0" max="360" step="1" value="45" oninput="updateTriLearn()">
-          </div>
           <div class="sl-item" style="margin-bottom:0">
-            <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">라디안 Radians</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-rad">π/4</span></div>
+            <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">각도 조절 Angle</span></span><span class="vv" style="color:var(--c-d)"><span id="val-tl-deg">45°</span> / <span id="val-tl-rad">π/4</span></span></div>
+            <input type="range" class="sl-d" id="sl-tl-deg" min="0" max="360" step="1" value="45" oninput="updateTriLearn()">
           </div>
         </div>
         <div class="yk-panel" style="margin-bottom:10px">
