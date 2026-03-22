@@ -439,29 +439,14 @@
     <button class="yk-btn" onclick="resetTrig()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
     <div class="yk-panel" style="margin-bottom:12px">
       <div class="yk-panel-title"><div class="yk-dot"></div>함수 선택 Function Type</div>
-      <div class="sec-label">기본 삼각함수 Basic</div>
-      <div class="tg" id="trig-basic-group">
-        <button class="yk-btn tg-active" data-fn="sin" onclick="setTF(this)">sin</button>
-        <button class="yk-btn" data-fn="cos" onclick="setTF(this)">cos</button>
-        <button class="yk-btn" data-fn="tan" onclick="setTF(this)">tan</button>
-        <button class="yk-btn" data-fn="cot" onclick="setTF(this)">cot</button>
-        <button class="yk-btn" data-fn="sec" onclick="setTF(this)">sec</button>
-        <button class="yk-btn" data-fn="csc" onclick="setTF(this)">csc</button>
+      <div class="tg" id="trig-basic-group" style="align-items:center;justify-content:flex-start"><span class="sec-label" style="margin:0;white-space:nowrap">기본</span>
+        <button class="yk-btn tg-active" data-fn="sin" onclick="setTF(this)">sin</button><button class="yk-btn" data-fn="cos" onclick="setTF(this)">cos</button><button class="yk-btn" data-fn="tan" onclick="setTF(this)">tan</button><button class="yk-btn" data-fn="cot" onclick="setTF(this)">cot</button><button class="yk-btn" data-fn="sec" onclick="setTF(this)">sec</button><button class="yk-btn" data-fn="csc" onclick="setTF(this)">csc</button>
       </div>
-      <div class="sec-label">합성 함수 Composite</div>
-      <div class="tg" id="trig-combo-group">
-        <button class="yk-btn" data-fn="sin+cos" onclick="setTF(this)">sin+cos</button>
-        <button class="yk-btn" data-fn="sin-cos" onclick="setTF(this)">sin-cos</button>
-        <button class="yk-btn" data-fn="sin*cos" onclick="setTF(this)">sin×cos</button>
-        <button class="yk-btn" data-fn="sin2" onclick="setTF(this)">sin²</button>
-        <button class="yk-btn" data-fn="cos2" onclick="setTF(this)">cos²</button>
-        <button class="yk-btn" data-fn="sin2+cos2" onclick="setTF(this)">sin²+cos²</button>
+      <div class="tg" id="trig-combo-group" style="align-items:center;justify-content:flex-start"><span class="sec-label" style="margin:0;white-space:nowrap">합성</span>
+        <button class="yk-btn" data-fn="sin+cos" onclick="setTF(this)">sin+cos</button><button class="yk-btn" data-fn="sin-cos" onclick="setTF(this)">sin-cos</button><button class="yk-btn" data-fn="sin*cos" onclick="setTF(this)">sin×cos</button><button class="yk-btn" data-fn="sin2" onclick="setTF(this)">sin²</button><button class="yk-btn" data-fn="cos2" onclick="setTF(this)">cos²</button><button class="yk-btn" data-fn="sin2+cos2" onclick="setTF(this)">sin²+cos²</button>
       </div>
-      <div class="sec-label">역삼각함수 Inverse</div>
-      <div class="tg" id="trig-inv-group">
-        <button class="yk-btn" data-fn="asin" onclick="setTF(this)">arcsin</button>
-        <button class="yk-btn" data-fn="acos" onclick="setTF(this)">arccos</button>
-        <button class="yk-btn" data-fn="atan" onclick="setTF(this)">arctan</button>
+      <div class="tg" id="trig-inv-group" style="align-items:center;justify-content:flex-start"><span class="sec-label" style="margin:0;white-space:nowrap">역함수</span>
+        <button class="yk-btn" data-fn="asin" onclick="setTF(this)">arcsin</button><button class="yk-btn" data-fn="acos" onclick="setTF(this)">arccos</button><button class="yk-btn" data-fn="atan" onclick="setTF(this)">arctan</button>
       </div>
     </div>
     <div class="yk-panel" style="margin-bottom:12px">
