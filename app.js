@@ -58,8 +58,15 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tg-active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     btn.classList.add('tg-active');
-    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    const tab = document.getElementById('tab-' + btn.dataset.tab);
+    tab.classList.add('active');
+    // Force Plotly to recalculate width for the newly visible tab
     window.dispatchEvent(new Event('resize'));
+    setTimeout(() => {
+      tab.querySelectorAll('.plot-box').forEach(el => {
+        if(el.querySelector('.js-plotly-plot')) Plotly.Plots.resize(el);
+      });
+    }, 50);
   });
 });
 

@@ -40,13 +40,14 @@
     max-width: 1800px;
     margin: 0 auto;
     min-height: calc(100vh - 150px);
+    overflow: hidden;
   }
   @media (max-width: 1000px) {
     .split { grid-template-columns: 1fr; }
     .ctrl-side { max-height: none !important; }
   }
 
-  .graph-side { padding: 16px 20px; display:flex; flex-direction:column; gap:10px; }
+  .graph-side { padding: 16px 20px; display:flex; flex-direction:column; gap:10px; overflow:hidden; max-width:100%; }
   .ctrl-side {
     padding: 16px;
     border-left: 1px solid rgba(128,128,128,0.15);
@@ -71,7 +72,7 @@
   .eq-var { font-weight:700; }
 
   /* Plot container */
-  .plot-box { border-radius:8px; overflow:hidden; flex:1; min-height:350px; }
+  .plot-box { border-radius:8px; overflow:hidden; flex:1; min-height:350px; max-width:100%; }
 
   /* Slider controls */
   .sl-item { margin-bottom:14px; }
@@ -154,10 +155,26 @@
     .split {
       grid-template-columns: 1fr;
       min-height: auto;
+      overflow: hidden;
+      width: 100%;
     }
     .graph-side {
       padding: 8px;
       gap: 6px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .plot-box {
+      min-height: 250px;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    /* Force Plotly to respect container width */
+    .plot-box .js-plotly-plot,
+    .plot-box .plot-container,
+    .plot-box .svg-container {
+      width: 100% !important;
+      max-width: 100% !important;
     }
     .ctrl-side {
       padding: 8px;
@@ -178,9 +195,6 @@
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
     }
-
-    /* Plot: shorter on mobile */
-    .plot-box { min-height: 250px; }
 
     /* Toggle buttons: compact */
     .tg { gap: 3px; }
