@@ -293,12 +293,42 @@ function updateTriLearn() {
   document.getElementById('tr-sec').textContent = Math.abs(cosV) < 1e-10 ? '∞' : f(1/cosV);
   document.getElementById('tr-cot').textContent = Math.abs(sinV) < 1e-10 ? '∞' : f(cosV/sinV);
 
-  document.getElementById('tr-angle').textContent = deg + '°';
-  document.getElementById('tr-adj').textContent = f(cosV);
-  document.getElementById('tr-opp').textContent = f(sinV);
-  document.getElementById('tr-hyp').textContent = '1.0000';
-
   drawUnitCircle(deg, rad, cosV, sinV);
+  drawTriLearnGraph(rad, sinV, cosV);
+}
+
+function drawTriLearnGraph(rad, sinV, cosV) {
+  const LB = makeLB();
+  const x = ls(0, 2*Math.PI, 500);
+  const ySin = x.map(xi => Math.sin(xi));
+  const yCos = x.map(xi => Math.cos(xi));
+  const yTan = x.map(xi => { const v = Math.tan(xi); return Math.abs(v) > 8 ? null : v; });
+
+  const tanV = Math.abs(cosV) < 1e-10 ? null : sinV / cosV;
+  const tanClip = tanV !== null && Math.abs(tanV) <= 8 ? tanV : null;
+
+  const tr = [
+    { x, y: ySin, type:'scatter', mode:'lines', line:{color:'#e94560',width:2.5}, name:'sin θ' },
+    { x, y: yCos, type:'scatter', mode:'lines', line:{color:'#3b82f6',width:2.5}, name:'cos θ' },
+    { x, y: yTan, type:'scatter', mode:'lines', line:{color:'#10b981',width:1.5,dash:'dot'}, connectgaps:false, name:'tan θ' },
+    // Current angle vertical line
+    { x:[rad,rad], y:[-8,8], type:'scatter', mode:'lines', line:{color:'#f59e0b',width:1.5,dash:'dash'}, showlegend:false },
+    // Points at current angle
+    { x:[rad], y:[sinV], type:'scatter', mode:'markers', marker:{color:'#e94560',size:10,line:{width:2,color:'white'}}, name:'sin='+sinV.toFixed(2) },
+    { x:[rad], y:[cosV], type:'scatter', mode:'markers', marker:{color:'#3b82f6',size:10,line:{width:2,color:'white'}}, name:'cos='+cosV.toFixed(2) },
+  ];
+  if (tanClip !== null) {
+    tr.push({ x:[rad], y:[tanClip], type:'scatter', mode:'markers', marker:{color:'#10b981',size:8,line:{width:2,color:'white'}}, name:'tan='+tanClip.toFixed(2) });
+  }
+
+  const piT = { tickvals:[0, Math.PI/2, Math.PI, 1.5*Math.PI, 2*Math.PI], ticktext:['0','π/2','π','3π/2','2π'] };
+  Plotly.react('plot-trilearn', tr, ml({
+    xaxis:{...LB.xaxis, range:[0, 2*Math.PI], title:'θ (라디안)', ...piT},
+    yaxis:{...LB.yaxis, range:[-4,4], title:'값', dtick:1},
+    height: 220,
+    showlegend:true,
+    legend:{orientation:'h', x:0.5, xanchor:'center', y:1.12, font:{size:10}}
+  }), CFG);
 }
 
 function drawUnitCircle(deg, rad, cosV, sinV) {

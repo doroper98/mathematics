@@ -142,6 +142,21 @@
   .trig-ratio-card .ratio-formula { font-size: 0.7rem; opacity: 0.4; margin-bottom: 4px; }
   .trig-ratio-card .ratio-val { font-size: 1.1rem; font-weight: 700; font-family: 'Consolas', monospace; }
 
+  /* Trilearn mid section: circle + controls side by side */
+  .trilearn-mid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .trilearn-mid .unit-circle-wrap { max-width: 380px; }
+  .trilearn-controls { min-width: 0; }
+
+  @media (max-width: 768px) {
+    .trilearn-mid { grid-template-columns: 1fr; }
+    .trilearn-mid .unit-circle-wrap { max-width: 100%; }
+  }
+
   /* Info description box */
   .desc-box { font-size:0.75rem; opacity:0.6; padding:8px 10px; border-radius:6px; background:rgba(128,128,128,0.06); margin-top:8px; line-height:1.5; }
   .deriv-eq { font-size:0.82rem; text-align:center; padding:8px; margin-top:8px; border-radius:6px; background:rgba(128,128,128,0.06); }
@@ -346,13 +361,58 @@
 </div></div>
 
 <!-- ===== 삼각비 학습 ===== -->
-<div class="tab-content" id="tab-trilearn"><div class="split">
-  <div class="graph-side">
+<div class="tab-content" id="tab-trilearn">
+  <div style="max-width:1200px; margin:0 auto; padding:8px 16px;">
     <div class="sec-hdr"><h2>삼각비와 단위원</h2><span class="en">Trigonometric Ratios & Unit Circle</span></div>
-    <div class="unit-circle-wrap">
-      <canvas id="cv-trilearn" width="500" height="500"></canvas>
+
+    <!-- 1. sin/cos/tan 그래프 -->
+    <div class="plot-box" id="plot-trilearn" style="min-height:220px; margin-bottom:10px;"></div>
+
+    <!-- 2. 단위원 + 슬라이더 가로 배치 -->
+    <div class="trilearn-mid">
+      <div class="unit-circle-wrap">
+        <canvas id="cv-trilearn" width="500" height="500"></canvas>
+      </div>
+      <div class="trilearn-controls">
+        <div class="yk-panel" style="margin-bottom:10px">
+          <div class="yk-panel-title"><div class="yk-dot"></div>각도 조절 Angle</div>
+          <div class="sl-item">
+            <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">각도 Degrees</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-deg">45°</span></div>
+            <input type="range" class="sl-d" id="sl-tl-deg" min="0" max="360" step="1" value="45" oninput="updateTriLearn()">
+          </div>
+          <div class="sl-item" style="margin-bottom:0">
+            <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">라디안 Radians</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-rad">π/4</span></div>
+          </div>
+        </div>
+        <div class="yk-panel" style="margin-bottom:10px">
+          <div class="yk-panel-title"><div class="yk-dot"></div>특수각 바로가기 Special Angles</div>
+          <div class="tg">
+            <button class="yk-btn" onclick="setTriAngle(0)">0°</button>
+            <button class="yk-btn" onclick="setTriAngle(30)">30°</button>
+            <button class="yk-btn" onclick="setTriAngle(45)">45°</button>
+            <button class="yk-btn" onclick="setTriAngle(60)">60°</button>
+            <button class="yk-btn" onclick="setTriAngle(90)">90°</button>
+            <button class="yk-btn" onclick="setTriAngle(120)">120°</button>
+            <button class="yk-btn" onclick="setTriAngle(150)">150°</button>
+            <button class="yk-btn" onclick="setTriAngle(180)">180°</button>
+            <button class="yk-btn" onclick="setTriAngle(270)">270°</button>
+            <button class="yk-btn" onclick="setTriAngle(360)">360°</button>
+          </div>
+        </div>
+        <div class="yk-panel">
+          <div class="yk-panel-title"><div class="yk-dot"></div>핵심 공식 Key Formulas</div>
+          <div class="desc-box" style="margin-top:0; font-size:0.8rem">
+            sin²θ + cos²θ = 1<br>
+            tan θ = sin θ / cos θ<br>
+            sin(90° - θ) = cos θ<br>
+            cos(90° - θ) = sin θ
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="trig-ratios">
+
+    <!-- 3. 삼각비 수치 (하단) -->
+    <div class="trig-ratios" style="margin-top:10px">
       <div class="trig-ratio-card"><div class="ratio-name">사인 sin</div><div class="ratio-formula">대변 / 빗변</div><div class="ratio-val" id="tr-sin" style="color:var(--c-a)">0.0000</div></div>
       <div class="trig-ratio-card"><div class="ratio-name">코사인 cos</div><div class="ratio-formula">인접변 / 빗변</div><div class="ratio-val" id="tr-cos" style="color:var(--c-b)">1.0000</div></div>
       <div class="trig-ratio-card"><div class="ratio-name">탄젠트 tan</div><div class="ratio-formula">대변 / 인접변</div><div class="ratio-val" id="tr-tan" style="color:var(--c-c)">0.0000</div></div>
@@ -361,52 +421,7 @@
       <div class="trig-ratio-card"><div class="ratio-name">코탄젠트 cot</div><div class="ratio-formula">1 / tan</div><div class="ratio-val" id="tr-cot">-</div></div>
     </div>
   </div>
-  <div class="ctrl-side">
-    <div class="yk-panel" style="margin-bottom:12px">
-      <div class="yk-panel-title"><div class="yk-dot"></div>각도 조절 Angle</div>
-      <div class="sl-item">
-        <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">각도 Degrees</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-deg">45°</span></div>
-        <input type="range" class="sl-d" id="sl-tl-deg" min="0" max="360" step="1" value="45" oninput="updateTriLearn()">
-      </div>
-      <div class="sl-item">
-        <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">라디안 Radians</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-rad">π/4</span></div>
-      </div>
-    </div>
-    <div class="yk-panel" style="margin-bottom:12px">
-      <div class="yk-panel-title"><div class="yk-dot"></div>특수각 바로가기 Special Angles</div>
-      <div class="tg">
-        <button class="yk-btn" onclick="setTriAngle(0)">0°</button>
-        <button class="yk-btn" onclick="setTriAngle(30)">30°</button>
-        <button class="yk-btn" onclick="setTriAngle(45)">45°</button>
-        <button class="yk-btn" onclick="setTriAngle(60)">60°</button>
-        <button class="yk-btn" onclick="setTriAngle(90)">90°</button>
-        <button class="yk-btn" onclick="setTriAngle(120)">120°</button>
-        <button class="yk-btn" onclick="setTriAngle(150)">150°</button>
-        <button class="yk-btn" onclick="setTriAngle(180)">180°</button>
-        <button class="yk-btn" onclick="setTriAngle(270)">270°</button>
-        <button class="yk-btn" onclick="setTriAngle(360)">360°</button>
-      </div>
-    </div>
-    <div class="yk-panel" style="margin-bottom:12px">
-      <div class="yk-panel-title"><div class="yk-dot"></div>직각삼각형 Right Triangle</div>
-      <div class="yk-grid-2">
-        <div class="yk-metric"><div class="yk-metric-label">빗변 Hypotenuse</div><div class="yk-metric-value" id="tr-hyp" style="font-size:1rem">1.0000</div></div>
-        <div class="yk-metric"><div class="yk-metric-label">각도 Angle</div><div class="yk-metric-value" id="tr-angle" style="font-size:1rem">45°</div></div>
-        <div class="yk-metric"><div class="yk-metric-label"><span style="color:var(--c-b)">인접변</span> Adjacent</div><div class="yk-metric-value" id="tr-adj" style="font-size:1rem;color:var(--c-b)">0.7071</div></div>
-        <div class="yk-metric"><div class="yk-metric-label"><span style="color:var(--c-a)">대변</span> Opposite</div><div class="yk-metric-value" id="tr-opp" style="font-size:1rem;color:var(--c-a)">0.7071</div></div>
-      </div>
-    </div>
-    <div class="yk-panel">
-      <div class="yk-panel-title"><div class="yk-dot"></div>핵심 공식 Key Formulas</div>
-      <div class="desc-box" style="margin-top:0">
-        sin²θ + cos²θ = 1<br>
-        tan θ = sin θ / cos θ<br>
-        sin(90° - θ) = cos θ<br>
-        cos(90° - θ) = sin θ
-      </div>
-    </div>
-  </div>
-</div></div>
+</div>
 
 <!-- ===== 삼각함수 ===== -->
 <div class="tab-content" id="tab-trig"><div class="split">
