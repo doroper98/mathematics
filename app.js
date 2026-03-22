@@ -149,7 +149,8 @@ function updateTrig() {
   if(!isInv&&!['sin2+cos2'].includes(trigFn))tr.push({x,y:trigEv(trigFn,x,1,1,0,0),type:'scatter',mode:'lines',line:{color:'rgba(128,128,128,0.15)',width:1,dash:'dot'},connectgaps:false,name:'기본형'});
   if(trigOpts.derivative){tr.push({x,y:numD(x,y),type:'scatter',mode:'lines',line:{color:lineC(4),width:2,dash:'dashdot'},connectgaps:false,name:"f'(x)"});document.getElementById('trig-deriv-eq').style.display='block';document.getElementById('trig-deriv-eq').textContent="도함수 f'(x)";}else document.getElementById('trig-deriv-eq').style.display='none';
   if(trigOpts.integralFill&&!isInv){const p=2*Math.PI/B,fx=ls(0,p,300),fy=trigEv(trigFn,fx,A,B,C,D);tr.push({x:fx,y:fx.map(()=>0),type:'scatter',mode:'lines',line:{color:'transparent'},showlegend:false});tr.push({x:fx,y:fy,type:'scatter',mode:'lines',fill:'tonexty',fillcolor:'rgba(16,185,129,0.15)',line:{color:'rgba(16,185,129,0.4)',width:1},connectgaps:false,name:'적분영역'});}
-  const xa=isInv?{...LB.xaxis,range:xR,title:'x'}:{...LB.xaxis,range:xR,title:'x',tickvals:[-4*Math.PI,-3*Math.PI,-2*Math.PI,-Math.PI,0,Math.PI,2*Math.PI,3*Math.PI,4*Math.PI],ticktext:['-4π','-3π','-2π','-π','0','π','2π','3π','4π']};
+  const piTicks={tickvals:[-4*Math.PI,-3.5*Math.PI,-3*Math.PI,-2.5*Math.PI,-2*Math.PI,-1.5*Math.PI,-Math.PI,-0.5*Math.PI,0,0.5*Math.PI,Math.PI,1.5*Math.PI,2*Math.PI,2.5*Math.PI,3*Math.PI,3.5*Math.PI,4*Math.PI],ticktext:['-4π','','-3π','','-2π','','-π','','0','','π','','2π','','3π','','4π'],dtick:Math.PI};
+  const xa=isInv?{...LB.xaxis,range:xR,title:'x'}:{...LB.xaxis,range:xR,title:'x',...piTicks};
   Plotly.react('plot-trig',tr,ml({xaxis:xa,yaxis:{...LB.yaxis,range:isInv?[-4,4]:[-8,8],title:'y'},showlegend:true,legend:{x:0.01,y:0.99,bgcolor:'rgba(128,128,128,0.05)',font:{size:10}}}),CFG);
   document.getElementById('info-amp').textContent=sf(Math.abs(A));document.getElementById('info-period').textContent=isInv?'-':sf(+(2*Math.PI/Math.abs(B)).toFixed(2));document.getElementById('info-phase').textContent=isInv?'-':sf(+(-C/B).toFixed(2));document.getElementById('info-vshift').textContent=sf(D);document.getElementById('info-trig-desc').textContent=trigDesc(trigFn);
 }
@@ -267,48 +268,169 @@ function updateIntersection(){
 }
 function resetIntersection(){document.getElementById('sl-im').value=1;document.getElementById('sl-in').value=0;document.getElementById('sl-ia').value=1;document.getElementById('sl-ic').value=0;updateIntersection();}
 
-// ===== 매개변수 =====
-let paramCurve='circle';
-function setPC(btn){document.querySelectorAll('#tab-parametric .yk-btn[data-curve]').forEach(b=>b.classList.remove('tg-active'));btn.classList.add('tg-active');paramCurve=btn.dataset.curve;buildParamSliders();updateParam();}
-function buildParamSliders(){
-  const el=document.getElementById('param-sliders');
-  const mk=(col,cls,id,nm,desc,val,min,max,step)=>`<div class="sl-item"><div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-${col})"></span><span class="vn" style="color:var(--c-${col})">${nm}</span><span class="vd">${desc}</span></span><span class="vv" style="color:var(--c-${col})" id="val-${id}">${(+val).toFixed(2)}</span></div><input type="range" class="sl-${cls}" id="sl-${id}" min="${min}" max="${max}" step="${step}" value="${val}" oninput="updateParam()"></div>`;
-  const s={circle:mk('a','a','pa','a','x반지름',2,0.1,5,0.1)+mk('b','b','pb','b','y반지름',1,0.1,5,0.1),lissajous:mk('a','a','pa','A','x주파수',3,1,8,1)+mk('b','b','pb','B','y주파수',2,1,8,1)+mk('c','c','pd','δ','위상차',1.57,0,6.28,0.05),spiral:mk('a','a','pa','a','성장률',0.1,0.01,0.5,0.01)+mk('b','b','pb','n','회전수',6,1,15,0.5),heart:mk('a','a','pa','s','크기',2,0.5,5,0.1)};el.innerHTML=s[paramCurve];
+// ===== 삼각비 학습 (Unit Circle + Right Triangle) =====
+function setTriAngle(deg) {
+  document.getElementById('sl-tl-deg').value = deg;
+  updateTriLearn();
 }
-function updateParam(){
-  const t=ls(0,2*Math.PI,1000);let x,y,eq;
-  if(paramCurve==='circle'){const a=+document.getElementById('sl-pa').value,b=+document.getElementById('sl-pb').value;document.getElementById('val-pa').textContent=a.toFixed(2);document.getElementById('val-pb').textContent=b.toFixed(2);x=t.map(ti=>a*Math.cos(ti));y=t.map(ti=>b*Math.sin(ti));eq=`x=${cv(VC.a,a.toFixed(1))}cos(t), y=${cv(VC.b,b.toFixed(1))}sin(t)`;}
-  else if(paramCurve==='lissajous'){const A=+document.getElementById('sl-pa').value,B=+document.getElementById('sl-pb').value,d=+document.getElementById('sl-pd').value;document.getElementById('val-pa').textContent=A.toFixed(2);document.getElementById('val-pb').textContent=B.toFixed(2);document.getElementById('val-pd').textContent=d.toFixed(2);const tt=ls(0,2*Math.PI,2000);x=tt.map(ti=>Math.sin(A*ti+d));y=tt.map(ti=>Math.sin(B*ti));eq=`x=sin(${cv(VC.a,A+'')}t+${cv(VC.c,d.toFixed(2))}), y=sin(${cv(VC.b,B+'')}t)`;}
-  else if(paramCurve==='spiral'){const a=+document.getElementById('sl-pa').value,tu=+document.getElementById('sl-pb').value;document.getElementById('val-pa').textContent=a.toFixed(2);document.getElementById('val-pb').textContent=tu.toFixed(2);const tt=ls(0,tu*2*Math.PI,2000);x=tt.map(ti=>a*ti*Math.cos(ti));y=tt.map(ti=>a*ti*Math.sin(ti));eq=`r=${cv(VC.a,a.toFixed(2))}t`;}
-  else if(paramCurve==='heart'){const s=+document.getElementById('sl-pa').value;document.getElementById('val-pa').textContent=s.toFixed(2);const tt=ls(0,2*Math.PI,1000);x=tt.map(ti=>s*16*Math.pow(Math.sin(ti),3)/16);y=tt.map(ti=>s*(13*Math.cos(ti)-5*Math.cos(2*ti)-2*Math.cos(3*ti)-Math.cos(4*ti))/16);eq=`하트 (크기=${cv(VC.a,s.toFixed(1))})`;}
-  document.getElementById('eq-param').innerHTML=eq;
-  const LB=makeLB();
-  Plotly.react('plot-param',[{x,y,type:'scatter',mode:'lines',line:{color:lineC(4),width:2.5}}],ml({xaxis:{...LB.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LB.yaxis,title:'y'}}),CFG);
-}
-function resetParam(){paramCurve='circle';document.querySelectorAll('#tab-parametric .yk-btn[data-curve]').forEach(b=>b.classList.remove('tg-active'));document.querySelector('#tab-parametric .yk-btn[data-curve="circle"]').classList.add('tg-active');buildParamSliders();updateParam();}
 
-// ===== 극좌표 =====
-let polarType='cardioid';
-function setPT(btn){document.querySelectorAll('#tab-polar .yk-btn[data-polar]').forEach(b=>b.classList.remove('tg-active'));btn.classList.add('tg-active');polarType=btn.dataset.polar;buildPolarSliders();updatePolar();}
-function buildPolarSliders(){
-  const el=document.getElementById('polar-sliders');
-  const mk=(col,cls,id,nm,desc,val,min,max,step)=>`<div class="sl-item"><div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-${col})"></span><span class="vn" style="color:var(--c-${col})">${nm}</span><span class="vd">${desc}</span></span><span class="vv" style="color:var(--c-${col})" id="val-${id}">${(+val).toFixed(2)}</span></div><input type="range" class="sl-${cls}" id="sl-${id}" min="${min}" max="${max}" step="${step}" value="${val}" oninput="updatePolar()"></div>`;
-  const s={cardioid:mk('a','a','poa','a','크기',1,0.1,5,0.1)+mk('b','b','pob','b','변형',1,0,5,0.1),rose:mk('a','a','poa','a','크기',3,0.5,5,0.1)+mk('b','b','pob','n','꽃잎수',3,1,8,1),spiral:mk('a','a','poa','a','성장률',0.2,0.05,1,0.05)+mk('b','b','pob','n','회전수',4,1,10,0.5),lemniscate:mk('a','a','poa','a²','크기',4,1,10,0.5)};el.innerHTML=s[polarType];
+function updateTriLearn() {
+  const deg = +document.getElementById('sl-tl-deg').value;
+  const rad = deg * Math.PI / 180;
+  document.getElementById('val-tl-deg').textContent = deg + '°';
+
+  // Radian display as fraction of π
+  const radFracs = {0:'0',30:'π/6',45:'π/4',60:'π/3',90:'π/2',120:'2π/3',135:'3π/4',150:'5π/6',180:'π',210:'7π/6',225:'5π/4',240:'4π/3',270:'3π/2',300:'5π/3',315:'7π/4',330:'11π/6',360:'2π'};
+  document.getElementById('val-tl-rad').textContent = radFracs[deg] || (rad / Math.PI).toFixed(2) + 'π';
+
+  const cosV = Math.cos(rad), sinV = Math.sin(rad), tanV = Math.tan(rad);
+  const f = v => Math.abs(v) < 1e-10 ? '0' : v.toFixed(4);
+
+  document.getElementById('tr-sin').textContent = f(sinV);
+  document.getElementById('tr-cos').textContent = f(cosV);
+  document.getElementById('tr-tan').textContent = Math.abs(cosV) < 1e-10 ? '∞' : f(tanV);
+  document.getElementById('tr-csc').textContent = Math.abs(sinV) < 1e-10 ? '∞' : f(1/sinV);
+  document.getElementById('tr-sec').textContent = Math.abs(cosV) < 1e-10 ? '∞' : f(1/cosV);
+  document.getElementById('tr-cot').textContent = Math.abs(sinV) < 1e-10 ? '∞' : f(cosV/sinV);
+
+  document.getElementById('tr-angle').textContent = deg + '°';
+  document.getElementById('tr-adj').textContent = f(cosV);
+  document.getElementById('tr-opp').textContent = f(sinV);
+  document.getElementById('tr-hyp').textContent = '1.0000';
+
+  drawUnitCircle(deg, rad, cosV, sinV);
 }
-function updatePolar(){
-  const theta=ls(0,4*Math.PI,2000);let r,eq;const LB=makeLB();
-  if(polarType==='cardioid'){const a=+document.getElementById('sl-poa').value,b=+document.getElementById('sl-pob').value;document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=b.toFixed(2);r=theta.map(t=>a+b*Math.cos(t));eq=`r=${cv(VC.a,a.toFixed(1))}+${cv(VC.b,b.toFixed(1))}cos(θ)`;}
-  else if(polarType==='rose'){const a=+document.getElementById('sl-poa').value,n=+document.getElementById('sl-pob').value;document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=n.toFixed(2);r=theta.map(t=>a*Math.cos(n*t));eq=`r=${cv(VC.a,a.toFixed(1))}cos(${cv(VC.b,n+'')}θ)`;}
-  else if(polarType==='spiral'){const a=+document.getElementById('sl-poa').value,tu=+document.getElementById('sl-pob').value;document.getElementById('val-poa').textContent=a.toFixed(2);document.getElementById('val-pob').textContent=tu.toFixed(2);const th=ls(0,tu*2*Math.PI,2000);r=th.map(t=>a*t);const x=r.map((ri,i)=>ri*Math.cos(th[i])),y=r.map((ri,i)=>ri*Math.sin(th[i]));document.getElementById('eq-polar').innerHTML=`r=${cv(VC.a,a.toFixed(2))}θ`;Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:lineC(2),width:2.5}}],ml({xaxis:{...LB.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LB.yaxis,title:'y'}}),CFG);return;}
-  else if(polarType==='lemniscate'){const a2=+document.getElementById('sl-poa').value;document.getElementById('val-poa').textContent=a2.toFixed(2);const th=ls(0,2*Math.PI,2000),x=[],y=[];th.forEach(t=>{const c2=Math.cos(2*t);if(c2>=0){const rv=Math.sqrt(a2*c2);x.push(rv*Math.cos(t));y.push(rv*Math.sin(t));}else{x.push(null);y.push(null);}});document.getElementById('eq-polar').innerHTML=`r²=${cv(VC.a,a2.toFixed(1))}cos(2θ)`;Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:lineC(2),width:2.5},connectgaps:false}],ml({xaxis:{...LB.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LB.yaxis,title:'y'}}),CFG);return;}
-  document.getElementById('eq-polar').innerHTML=eq;
-  const x=r.map((ri,i)=>ri*Math.cos(theta[i])),y=r.map((ri,i)=>ri*Math.sin(theta[i]));
-  Plotly.react('plot-polar',[{x,y,type:'scatter',mode:'lines',line:{color:lineC(2),width:2.5}}],ml({xaxis:{...LB.xaxis,scaleanchor:'y',title:'x'},yaxis:{...LB.yaxis,title:'y'}}),CFG);
+
+function drawUnitCircle(deg, rad, cosV, sinV) {
+  const canvas = document.getElementById('cv-trilearn');
+  if (!canvas) return;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const size = Math.min(rect.width, rect.height) || 500;
+  canvas.width = size * 2; canvas.height = size * 2;
+  canvas.style.width = size + 'px'; canvas.style.height = size + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2); // retina
+  const cx = size / 2, cy = size / 2, r = size * 0.35;
+
+  // Get theme colors
+  const cs = getComputedStyle(document.body);
+  const bgCol = cs.backgroundColor || '#fff';
+  const textCol = cs.color || '#222';
+
+  ctx.clearRect(0, 0, size, size);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(128,128,128,0.12)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(size, cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, size); ctx.stroke();
+
+  // Unit circle
+  ctx.strokeStyle = 'rgba(128,128,128,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.stroke();
+
+  // Angle arc
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(cx, cy, r * 0.2, 0, -rad, rad > 0); ctx.stroke();
+
+  // Angle label
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = `${size*0.035}px sans-serif`;
+  ctx.textAlign = 'left';
+  const labelR = r * 0.28;
+  ctx.fillText(deg + '°', cx + labelR * Math.cos(-rad/2) + 4, cy + labelR * Math.sin(-rad/2) + 4);
+
+  // Point on circle
+  const px = cx + r * cosV, py = cy - r * sinV;
+
+  // cos line (adjacent - blue)
+  ctx.strokeStyle = '#3b82f6';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, cy); ctx.stroke();
+  ctx.fillStyle = '#3b82f6';
+  ctx.font = `bold ${size*0.032}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('cos', (cx + px) / 2, cy + size * 0.04);
+
+  // sin line (opposite - red)
+  ctx.strokeStyle = '#e94560';
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(px, cy); ctx.lineTo(px, py); ctx.stroke();
+  ctx.fillStyle = '#e94560';
+  ctx.textAlign = 'left';
+  ctx.fillText('sin', px + 6, (cy + py) / 2 + 4);
+
+  // Hypotenuse (radius line)
+  ctx.strokeStyle = textCol;
+  ctx.globalAlpha = 0.6;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+  ctx.globalAlpha = 1;
+
+  // Right angle indicator
+  if (Math.abs(cosV) > 0.01 && Math.abs(sinV) > 0.01) {
+    const sq = size * 0.02;
+    const sx = cosV > 0 ? -sq : sq;
+    const sy = sinV > 0 ? sq : -sq;
+    ctx.strokeStyle = 'rgba(128,128,128,0.4)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(px + sx, cy); ctx.lineTo(px + sx, cy + sy); ctx.lineTo(px, cy + sy);
+    ctx.stroke();
+  }
+
+  // tan line (green) - from (1,0) vertically
+  if (Math.abs(cosV) > 0.01) {
+    const tanLen = sinV / cosV;
+    const tanPx = cx + r, tanPy = cy - r * tanLen;
+    // Clip to reasonable range
+    if (Math.abs(tanLen) < 4) {
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(tanPx, cy); ctx.lineTo(tanPx, tanPy); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#10b981';
+      ctx.font = `bold ${size*0.03}px sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('tan', tanPx + 4, (cy + tanPy) / 2);
+
+      // Secant line (origin to tan point)
+      ctx.strokeStyle = 'rgba(128,128,128,0.15)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(tanPx, tanPy); ctx.stroke();
+    }
+  }
+
+  // Point dot
+  ctx.fillStyle = '#f59e0b';
+  ctx.beginPath(); ctx.arc(px, py, 6, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = textCol;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Coordinate label
+  ctx.fillStyle = textCol;
+  ctx.font = `${size*0.028}px sans-serif`;
+  ctx.textAlign = cosV >= 0 ? 'left' : 'right';
+  const lx = cosV >= 0 ? px + 10 : px - 10;
+  const ly = sinV >= 0 ? py - 10 : py + 16;
+  ctx.fillText(`(${cosV.toFixed(2)}, ${sinV.toFixed(2)})`, lx, ly);
+
+  // Axis labels
+  ctx.fillStyle = 'rgba(128,128,128,0.5)';
+  ctx.font = `${size*0.026}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('1', cx + r, cy + size * 0.04);
+  ctx.fillText('-1', cx - r, cy + size * 0.04);
+  ctx.fillText('1', cx + size * 0.02, cy - r);
+  ctx.fillText('-1', cx + size * 0.03, cy + r + size * 0.01);
 }
-function resetPolar(){polarType='cardioid';document.querySelectorAll('#tab-polar .yk-btn[data-polar]').forEach(b=>b.classList.remove('tg-active'));document.querySelector('#tab-polar .yk-btn[data-polar="cardioid"]').classList.add('tg-active');buildPolarSliders();updatePolar();}
 
 // ===== Replot all for theme change =====
-function replotAll(){updateLinear();updateQuad();updateTrig();updateDeriv();updateInteg();updateIntersection();updateParam();updatePolar();}
+function replotAll(){updateLinear();updateQuad();updateTriLearn();updateTrig();updateDeriv();updateInteg();updateIntersection();}
 
 // ===== Init =====
-window.addEventListener('load',()=>{buildDerivSliders();buildIntegSliders();buildParamSliders();buildPolarSliders();replotAll();});
+window.addEventListener('load',()=>{buildDerivSliders();buildIntegSliders();replotAll();});

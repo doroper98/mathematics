@@ -110,8 +110,37 @@
   .sec-label:not(:first-child) { margin-top:8px; }
 
   /* Toggle group (reuses yk-btn) */
-  .tg { display:flex; gap:5px; flex-wrap:wrap; }
+  .tg { display:flex; gap:5px; flex-wrap:wrap; justify-content:center; }
   .tg + .tg { margin-top:6px; }
+
+  /* Unit circle canvas */
+  .unit-circle-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .unit-circle-wrap canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .trig-ratios {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .trig-ratio-card {
+    text-align: center;
+    padding: 10px 6px;
+    border-radius: 8px;
+    background: rgba(128,128,128,0.06);
+  }
+  .trig-ratio-card .ratio-name { font-size: 0.75rem; opacity: 0.6; margin-bottom: 4px; }
+  .trig-ratio-card .ratio-formula { font-size: 0.7rem; opacity: 0.4; margin-bottom: 4px; }
+  .trig-ratio-card .ratio-val { font-size: 1.1rem; font-weight: 700; font-family: 'Consolas', monospace; }
 
   /* Info description box */
   .desc-box { font-size:0.75rem; opacity:0.6; padding:8px 10px; border-radius:6px; background:rgba(128,128,128,0.06); margin-top:8px; line-height:1.5; }
@@ -250,12 +279,11 @@
 <div class="tabs">
   <button class="yk-btn tab-btn tg-active" data-tab="linear">일차함수</button>
   <button class="yk-btn tab-btn" data-tab="quadratic">이차함수</button>
+  <button class="yk-btn tab-btn" data-tab="trilearn">삼각비</button>
   <button class="yk-btn tab-btn" data-tab="trig">삼각함수</button>
   <button class="yk-btn tab-btn" data-tab="derivative">미분</button>
   <button class="yk-btn tab-btn" data-tab="integral">적분</button>
   <button class="yk-btn tab-btn" data-tab="intersection">교차 영역</button>
-  <button class="yk-btn tab-btn" data-tab="parametric">매개변수</button>
-  <button class="yk-btn tab-btn" data-tab="polar">극좌표</button>
 </div>
 
 <!-- ===== 일차함수 ===== -->
@@ -312,6 +340,69 @@
         <div class="yk-metric"><div class="yk-metric-label">대칭축 Axis</div><div class="yk-metric-value" id="info-axis" style="font-size:1rem">x = 0</div></div>
         <div class="yk-metric"><div class="yk-metric-label">판별식 D</div><div class="yk-metric-value" id="info-disc" style="font-size:1rem">0</div></div>
         <div class="yk-metric"><div class="yk-metric-label">근 Roots</div><div class="yk-metric-value" id="info-roots" style="font-size:0.85rem">x = 0</div></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<!-- ===== 삼각비 학습 ===== -->
+<div class="tab-content" id="tab-trilearn"><div class="split">
+  <div class="graph-side">
+    <div class="sec-hdr"><h2>삼각비와 단위원</h2><span class="en">Trigonometric Ratios & Unit Circle</span></div>
+    <div class="unit-circle-wrap">
+      <canvas id="cv-trilearn" width="500" height="500"></canvas>
+    </div>
+    <div class="trig-ratios">
+      <div class="trig-ratio-card"><div class="ratio-name">사인 sin</div><div class="ratio-formula">대변 / 빗변</div><div class="ratio-val" id="tr-sin" style="color:var(--c-a)">0.0000</div></div>
+      <div class="trig-ratio-card"><div class="ratio-name">코사인 cos</div><div class="ratio-formula">인접변 / 빗변</div><div class="ratio-val" id="tr-cos" style="color:var(--c-b)">1.0000</div></div>
+      <div class="trig-ratio-card"><div class="ratio-name">탄젠트 tan</div><div class="ratio-formula">대변 / 인접변</div><div class="ratio-val" id="tr-tan" style="color:var(--c-c)">0.0000</div></div>
+      <div class="trig-ratio-card"><div class="ratio-name">코시컨트 csc</div><div class="ratio-formula">1 / sin</div><div class="ratio-val" id="tr-csc">-</div></div>
+      <div class="trig-ratio-card"><div class="ratio-name">시컨트 sec</div><div class="ratio-formula">1 / cos</div><div class="ratio-val" id="tr-sec">1.0000</div></div>
+      <div class="trig-ratio-card"><div class="ratio-name">코탄젠트 cot</div><div class="ratio-formula">1 / tan</div><div class="ratio-val" id="tr-cot">-</div></div>
+    </div>
+  </div>
+  <div class="ctrl-side">
+    <div class="yk-panel" style="margin-bottom:12px">
+      <div class="yk-panel-title"><div class="yk-dot"></div>각도 조절 Angle</div>
+      <div class="sl-item">
+        <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">각도 Degrees</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-deg">45°</span></div>
+        <input type="range" class="sl-d" id="sl-tl-deg" min="0" max="360" step="1" value="45" oninput="updateTriLearn()">
+      </div>
+      <div class="sl-item">
+        <div class="sl-lbl"><span class="nm"><span class="dot" style="background:var(--c-d)"></span><span class="vn" style="color:var(--c-d)">θ</span><span class="vd">라디안 Radians</span></span><span class="vv" style="color:var(--c-d)" id="val-tl-rad">π/4</span></div>
+      </div>
+    </div>
+    <div class="yk-panel" style="margin-bottom:12px">
+      <div class="yk-panel-title"><div class="yk-dot"></div>특수각 바로가기 Special Angles</div>
+      <div class="tg">
+        <button class="yk-btn" onclick="setTriAngle(0)">0°</button>
+        <button class="yk-btn" onclick="setTriAngle(30)">30°</button>
+        <button class="yk-btn" onclick="setTriAngle(45)">45°</button>
+        <button class="yk-btn" onclick="setTriAngle(60)">60°</button>
+        <button class="yk-btn" onclick="setTriAngle(90)">90°</button>
+        <button class="yk-btn" onclick="setTriAngle(120)">120°</button>
+        <button class="yk-btn" onclick="setTriAngle(150)">150°</button>
+        <button class="yk-btn" onclick="setTriAngle(180)">180°</button>
+        <button class="yk-btn" onclick="setTriAngle(270)">270°</button>
+        <button class="yk-btn" onclick="setTriAngle(360)">360°</button>
+      </div>
+    </div>
+    <div class="yk-panel" style="margin-bottom:12px">
+      <div class="yk-panel-title"><div class="yk-dot"></div>직각삼각형 Right Triangle</div>
+      <div class="yk-grid-2">
+        <div class="yk-metric"><div class="yk-metric-label">빗변 Hypotenuse</div><div class="yk-metric-value" id="tr-hyp" style="font-size:1rem">1.0000</div></div>
+        <div class="yk-metric"><div class="yk-metric-label">각도 Angle</div><div class="yk-metric-value" id="tr-angle" style="font-size:1rem">45°</div></div>
+        <div class="yk-metric"><div class="yk-metric-label"><span style="color:var(--c-b)">인접변</span> Adjacent</div><div class="yk-metric-value" id="tr-adj" style="font-size:1rem;color:var(--c-b)">0.7071</div></div>
+        <div class="yk-metric"><div class="yk-metric-label"><span style="color:var(--c-a)">대변</span> Opposite</div><div class="yk-metric-value" id="tr-opp" style="font-size:1rem;color:var(--c-a)">0.7071</div></div>
+      </div>
+    </div>
+    <div class="yk-panel">
+      <div class="yk-panel-title"><div class="yk-dot"></div>핵심 공식 Key Formulas</div>
+      <div class="desc-box" style="margin-top:0">
+        sin²θ + cos²θ = 1<br>
+        tan θ = sin θ / cos θ<br>
+        sin(90° - θ) = cos θ<br>
+        cos(90° - θ) = sin θ
       </div>
     </div>
   </div>
@@ -495,50 +586,6 @@
         <div class="yk-metric" style="grid-column:1/-1"><div class="yk-metric-label">정적분 Integral</div><div class="yk-metric-value" id="info-integral" style="font-size:0.85rem">-</div></div>
       </div>
     </div>
-  </div>
-</div></div>
-
-<!-- ===== 매개변수 ===== -->
-<div class="tab-content" id="tab-parametric"><div class="split">
-  <div class="graph-side">
-    <div class="sec-hdr"><h2>매개변수 곡선</h2><span class="en">Parametric Curves</span></div>
-    <div class="eq-display" id="eq-param"></div>
-    <div class="plot-box" id="plot-param"></div>
-  </div>
-  <div class="ctrl-side">
-    <button class="yk-btn" onclick="resetParam()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
-    <div class="yk-panel" style="margin-bottom:12px">
-      <div class="yk-panel-title"><div class="yk-dot"></div>곡선 유형 Curve Type</div>
-      <div class="tg">
-        <button class="yk-btn tg-active" data-curve="circle" onclick="setPC(this)">원/타원</button>
-        <button class="yk-btn" data-curve="lissajous" onclick="setPC(this)">리사주</button>
-        <button class="yk-btn" data-curve="spiral" onclick="setPC(this)">나선</button>
-        <button class="yk-btn" data-curve="heart" onclick="setPC(this)">하트</button>
-      </div>
-    </div>
-    <div class="yk-panel" id="param-panel"><div id="param-sliders"></div></div>
-  </div>
-</div></div>
-
-<!-- ===== 극좌표 ===== -->
-<div class="tab-content" id="tab-polar"><div class="split">
-  <div class="graph-side">
-    <div class="sec-hdr"><h2>극좌표</h2><span class="en">Polar Coordinates</span></div>
-    <div class="eq-display" id="eq-polar"></div>
-    <div class="plot-box" id="plot-polar"></div>
-  </div>
-  <div class="ctrl-side">
-    <button class="yk-btn" onclick="resetPolar()" style="float:right;font-size:0.7rem;padding:4px 12px">초기화</button>
-    <div class="yk-panel" style="margin-bottom:12px">
-      <div class="yk-panel-title"><div class="yk-dot"></div>곡선 유형 Curve Type</div>
-      <div class="tg">
-        <button class="yk-btn tg-active" data-polar="cardioid" onclick="setPT(this)">심장선</button>
-        <button class="yk-btn" data-polar="rose" onclick="setPT(this)">장미곡선</button>
-        <button class="yk-btn" data-polar="spiral" onclick="setPT(this)">나선</button>
-        <button class="yk-btn" data-polar="lemniscate" onclick="setPT(this)">렘니스케이트</button>
-      </div>
-    </div>
-    <div class="yk-panel" id="polar-panel"><div id="polar-sliders"></div></div>
   </div>
 </div></div>
 
